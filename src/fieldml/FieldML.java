@@ -2,6 +2,7 @@ package fieldml;
 
 import fieldml.domain.*;
 
+// In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
 public class FieldML
 {
     public static int FieldML_CreateCompositeDomain( int parentId, String name )

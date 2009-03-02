@@ -19,4 +19,18 @@ public class CompositeDomain
 
         components = new HashMap<String, Domain>();
     }
+
+
+    @Override
+    public void importInto( CompositeDomain parentDomain, String newName )
+    {
+        CompositeDomain newDomain = new CompositeDomain( parentDomain, newName );
+        
+        for( String childName : components.keySet() )
+        {
+            //Imported children retain their name. Potential ambiguity is resolved by
+            //ensuring that their (newly created) parent has a unique name.
+            components.get( childName ).importInto( newDomain, childName );
+        }
+    }
 }

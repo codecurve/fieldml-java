@@ -74,4 +74,6 @@ public abstract class Domain
     {
         return id;
     }
+    
+    public abstract void importInto( CompositeDomain parentDomain, String newName );
 }
