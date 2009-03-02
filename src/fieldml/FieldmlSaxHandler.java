@@ -6,7 +6,7 @@ import java.util.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-public class FieldmlHandler
+public class FieldmlSaxHandler
     extends DefaultHandler
 {
     private enum ParsingState
@@ -18,7 +18,7 @@ public class FieldmlHandler
     }
 
     private final StringBuilder characters;
-    
+
     private String domainName;
 
     private final Deque<Integer> domainStack;
@@ -34,9 +34,11 @@ public class FieldmlHandler
         {
             if( ( state != ParsingState.NONE ) && ( state != ParsingState.COMPOSITE_DOMAIN ) )
             {
+                // ERROR
             }
             else if( attributes.getValue( "name" ) == null )
             {
+                // ERROR
             }
 
             int id;
@@ -59,14 +61,35 @@ public class FieldmlHandler
              */
             if( ( state != ParsingState.NONE ) && ( state != ParsingState.COMPOSITE_DOMAIN ) )
             {
+                // ERROR
             }
             else if( attributes.getValue( "name" ) == null )
             {
+                // ERROR
             }
-            
+
             domainName = attributes.getValue( "name" );
 
             state = ParsingState.DISCRETE_DOMAIN;
+        }
+        else if( qName.compareTo( "import_domain" ) == 0 )
+        {
+            // We could allow importing domains at file scope. This is functionally equivalent to aliases.
+            if( state != ParsingState.COMPOSITE_DOMAIN )
+            {
+                // ERROR
+            }
+            else if( ( attributes.getValue( "id" ) == null ) || ( attributes.getValue( "domain" ) == null ) )
+            {
+                // ERROR
+            }
+
+            String newName = attributes.getValue( "id" );
+            String originalDomainName = attributes.getValue( "domain" );
+
+            int originalDomainId = FieldML.FieldML_GetDomainId( originalDomainName );
+            
+            FieldML.FieldML_ImportDomain( domainStack.peek(), originalDomainId, newName );
         }
 
         System.out.println( "+ " + qName );
@@ -113,7 +136,7 @@ public class FieldmlHandler
                 state = ParsingState.COMPOSITE_DOMAIN;
             }
         }
-        
+
         System.out.println( "- " + qName );
     }
 
@@ -124,7 +147,7 @@ public class FieldmlHandler
     }
 
 
-    private FieldmlHandler()
+    private FieldmlSaxHandler()
     {
         characters = new StringBuilder();
 
@@ -139,7 +162,7 @@ public class FieldmlHandler
         try
         {
             XMLReader xr = XMLReaderFactory.createXMLReader();
-            FieldmlHandler handler = new FieldmlHandler();
+            FieldmlSaxHandler handler = new FieldmlSaxHandler();
             xr.setContentHandler( handler );
             xr.setErrorHandler( handler );
 
