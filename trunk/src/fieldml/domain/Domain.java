@@ -2,9 +2,7 @@ package fieldml.domain;
 
 import java.util.*;
 
-import fieldml.exception.FieldmlException;
-
-public class Domain
+public abstract class Domain
 {
     private static final int ID_FUDGE = 10000;
     
@@ -16,13 +14,11 @@ public class Domain
     {
         domains = new HashMap<Integer, Domain>();
     }
-
-    /**
-     * A domain can have named components, each of which is necessarily a domain itself.
-     * 
-     * The term subdomain is reserved for subsets of domains, rather than components.
-     */
-    private final Map<String, Domain> components;
+    
+    public static Domain get( int id )
+    {
+        return domains.get( id );
+    }
 
     /**
      * A globally unique integer identifying the domain, useful for internal (inter-process) and
@@ -37,32 +33,14 @@ public class Domain
      */
     private final String name;
 
-    private final Domain parent;
+    private final CompositeDomain parent;
 
 
-    public Domain( Domain parent, String name )
-        throws FieldmlException
+    public Domain( CompositeDomain parent, String name )
     {
-        components = new HashMap<String, Domain>();
-
-        int delimiterPosition = name.indexOf( DOMAIN_DELIMITER );
-
-        if( ( name.length() == 0 ) || ( delimiterPosition == 0 ) || ( delimiterPosition == name.length() - 1 ) )
-        {
-            throw new FieldmlException( "Error creating domain. Invalid name: " + name );
-        }
-
         id = domains.size() + ID_FUDGE;
 
         domains.put( id, this );
-
-        if( delimiterPosition != -1 )
-        {
-            String childName = name.substring( delimiterPosition + 1 );
-            name = name.substring( 0, delimiterPosition - 1 );
-            
-            new Domain( this, childName );
-        }
 
         this.parent = parent;
         if( parent != null )
@@ -71,13 +49,6 @@ public class Domain
         }
         
         this.name = name;
-    }
-
-
-    public Domain( String name )
-        throws FieldmlException
-    {
-        this( null, name );
     }
 
 
@@ -90,5 +61,17 @@ public class Domain
     public String getFullName()
     {
         return parent.getFullName() + DOMAIN_DELIMITER + name;
+    }
+
+
+    public CompositeDomain getParent()
+    {
+        return parent;
+    }
+
+
+    public int getId()
+    {
+        return id;
     }
 }
