@@ -18,6 +18,8 @@ public class FieldmlHandler
     }
 
     private final StringBuilder characters;
+    
+    private String domainName;
 
     private final Deque<Integer> domainStack;
 
@@ -52,25 +54,17 @@ public class FieldmlHandler
         }
         else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
+            /*
+             * Creation of discrete domains must be ferred until we know all the values.
+             */
             if( ( state != ParsingState.NONE ) && ( state != ParsingState.COMPOSITE_DOMAIN ) )
             {
             }
             else if( attributes.getValue( "name" ) == null )
             {
             }
-
-            int id;
-
-            if( domainStack.size() > 0 )
-            {
-                id = FieldML.FieldML_CreateDiscreteDomain( domainStack.peek(), attributes.getValue( "name" ) );
-            }
-            else
-            {
-                id = FieldML.FieldML_CreateDiscreteDomain( 0, attributes.getValue( "name" ) );
-            }
-
-            domainStack.push( id );
+            
+            domainName = attributes.getValue( "name" );
 
             state = ParsingState.DISCRETE_DOMAIN;
         }
@@ -94,13 +88,21 @@ public class FieldmlHandler
         }
         else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
+            // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
             int[] values = getValues( characters );
 
-            FieldML.FieldML_AddDiscreteDomainValues( domainStack.peek(), values, 0, values.length );
+            int id;
+
+            if( domainStack.size() > 0 )
+            {
+                id = FieldML.FieldML_CreateDiscreteDomain( domainStack.peek(), domainName, values, 0, values.length );
+            }
+            else
+            {
+                id = FieldML.FieldML_CreateDiscreteDomain( 0, domainName, values, 0, values.length );
+            }
 
             characters.setLength( 0 );
-
-            domainStack.pop();
 
             if( domainStack.size() == 0 )
             {

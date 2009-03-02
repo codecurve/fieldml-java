@@ -3,15 +3,22 @@ package fieldml.domain;
 public class DiscreteDomain
     extends Domain
 {
-    private final int[] entries;
+    private final int[] values;
 
 
-    public DiscreteDomain( CompositeDomain parent, String name, int[] entries, int startIndex, int count )
+    public DiscreteDomain( CompositeDomain parent, String name, int[] values, int startIndex, int count )
     {
         super( parent, name );
 
-        this.entries = new int[count];
+        this.values = new int[count];
 
-        System.arraycopy( entries, startIndex, this.entries, 0, count );
+        System.arraycopy( values, startIndex, this.values, 0, count );
+    }
+
+
+    @Override
+    public void importInto( CompositeDomain parentDomain, String newName )
+    {
+        new DiscreteDomain( parentDomain, newName, values, 0, values.length ); 
     }
 }
