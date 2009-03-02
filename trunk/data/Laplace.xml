@@ -1,26 +1,34 @@
 <fieldml>
-  <domain id="mesh.elements">
-    <discrete_component id="element_id" value="index">
-      3  4  7  8  11  12  15  16
-    </discrete_component>
-  </domain>
+  <continuous_domain id="library::finite" value="real" min="0" max="1" />
+  
+  <continuous_domain id="library::semifinite" value="real" min="0" />
 
-  <domain id="mesh.nodes">
-    <discrete_component id="node_id" value="index" count="12">
-      3  4  5  8  9  10  14  15  19  20  24  25
-    </discrete_component>
+  <continuous_domain id="library::infinite" value="real" />
+
+  <domain id="library::unit_square">
+    <import_domain id="x" domain="library::finite" />
+    <import_domain id="y" domain="library::finite" />
   </domain>
+  
+  <discrete_domain id="mesh.element" value="index">
+      3  4  7  8  11  12  15  16
+  </discrete_domain>
+
+  <discrete_domain id="mesh.node" value="index">
+      3  4  5  8  9  10  14  15  19  20  24  25
+  </discrete_domain>
+  
 
   <domain id="mesh.surface">
-    <import_component id="element_id" domain="mesh.elements"/>
-    <import_component id="xi" domain="library::unit_square"/>
+    <import_domain id="element" domain="mesh.element"/>
+    <import_domain id="xi" domain="library::unit_square"/>
   </domain>
 
-  <field id="element.nodes" domain="mesh.elements" parameters="element_id">
-    <component id="node1" value="mesh.nodes"/>
-    <component id="node2" value="mesh.nodes"/>
-    <component id="node3" value="mesh.nodes"/>
-    <component id="node4" value="mesh.nodes"/>
+  <field id="element.nodes" domain="mesh.element">
+    <component id="node1" value="mesh.node"/>
+    <component id="node2" value="mesh.node"/>
+    <component id="node3" value="mesh.node"/>
+    <component id="node4" value="mesh.node"/>
 
     <value_map component="element_id" value="3">
       <assign>
@@ -175,7 +183,7 @@
     </evaluated_component>
   </field>
 
-  <field id="node.parameters" domain="mesh.nodes">
+  <field id="node.parameters" domain="mesh.node">
     <component id="x" value="real"/>
     <component id="y" value="real"/>
     <component id="g" value="real"/>
