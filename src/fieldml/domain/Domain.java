@@ -63,6 +63,9 @@ public abstract class Domain
         domains.put( id, this );
         domainIds.put( getFullName(), id );
 
+        //Although convenient, adding a child automatically to its parent is a little side-effecty,
+        //and leads to the slightly wierd phenomenon of 'dangling constructors'. At the moment, there
+        //seems no compelling reason to change this.
         this.parent = parent;
         if( parent != null )
         {
