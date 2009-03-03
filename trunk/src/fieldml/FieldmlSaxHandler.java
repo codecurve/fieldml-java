@@ -21,9 +21,7 @@ public class FieldmlSaxHandler
 
     private String domainName;
 
-    private final Deque<Integer> domainStack;
-
-    private final Deque<Integer> fieldStack;
+    private final Deque<Integer> idStack;
 
     private ParsingState state;
 
@@ -43,16 +41,16 @@ public class FieldmlSaxHandler
 
             int id;
 
-            if( domainStack.size() > 0 )
+            if( idStack.size() > 0 )
             {
-                id = FieldML.FieldML_CreateCompositeDomain( domainStack.peek(), attributes.getValue( "name" ) );
+                id = FieldML.FieldML_CreateCompositeDomain( idStack.peek(), attributes.getValue( "name" ) );
             }
             else
             {
                 id = FieldML.FieldML_CreateCompositeDomain( 0, attributes.getValue( "name" ) );
             }
 
-            domainStack.push( id );
+            idStack.push( id );
         }
         else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
@@ -89,10 +87,8 @@ public class FieldmlSaxHandler
 
             int originalDomainId = FieldML.FieldML_GetDomainId( originalDomainName );
             
-            FieldML.FieldML_ImportDomain( domainStack.peek(), originalDomainId, newName );
+            FieldML.FieldML_ImportDomain( idStack.peek(), originalDomainId, newName );
         }
-
-        System.out.println( "+ " + qName );
 
         characters.setLength( 0 );
     }
@@ -102,9 +98,9 @@ public class FieldmlSaxHandler
     {
         if( qName.compareTo( "domain" ) == 0 )
         {
-            domainStack.pop();
+            idStack.pop();
 
-            if( domainStack.size() == 0 )
+            if( idStack.size() == 0 )
             {
                 state = ParsingState.NONE;
             }
@@ -116,9 +112,9 @@ public class FieldmlSaxHandler
 
             int id;
 
-            if( domainStack.size() > 0 )
+            if( idStack.size() > 0 )
             {
-                id = FieldML.FieldML_CreateDiscreteDomain( domainStack.peek(), domainName, values, 0, values.length );
+                id = FieldML.FieldML_CreateDiscreteDomain( idStack.peek(), domainName, values, 0, values.length );
             }
             else
             {
@@ -127,7 +123,7 @@ public class FieldmlSaxHandler
 
             characters.setLength( 0 );
 
-            if( domainStack.size() == 0 )
+            if( idStack.size() == 0 )
             {
                 state = ParsingState.NONE;
             }
@@ -136,8 +132,6 @@ public class FieldmlSaxHandler
                 state = ParsingState.COMPOSITE_DOMAIN;
             }
         }
-
-        System.out.println( "- " + qName );
     }
 
 
@@ -151,9 +145,7 @@ public class FieldmlSaxHandler
     {
         characters = new StringBuilder();
 
-        domainStack = new ArrayDeque<Integer>();
-
-        fieldStack = new ArrayDeque<Integer>();
+        idStack = new ArrayDeque<Integer>();
     }
 
 
