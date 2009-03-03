@@ -1,4 +1,9 @@
 <fieldml>
+  <!--
+    Produced by OpenCMISS, using the LaplaceExample project with a 4x4x0 mesh computed by 2 nodes. This file
+    represents the first node's output.
+   -->
+
   <continuous_domain id="library::finite" value="real" min="0" max="1" />
   
   <continuous_domain id="library::semifinite" value="real" min="0" />
