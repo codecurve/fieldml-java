@@ -1,6 +1,7 @@
 package fieldml.domain;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompositeDomain
     extends Domain
@@ -13,16 +14,16 @@ public class CompositeDomain
     private final Map<String, Domain> components = new HashMap<String, Domain>(); 
 
 
-    public CompositeDomain( CompositeDomain parent, String name )
+    public CompositeDomain( DomainManager manager, CompositeDomain parent, String name )
     {
-        super( parent, name );
+        super( manager, parent, name );
     }
 
 
     @Override
     public void importInto( CompositeDomain parentDomain, String newName )
     {
-        CompositeDomain newDomain = new CompositeDomain( parentDomain, newName );
+        CompositeDomain newDomain = new CompositeDomain( getManager(), parentDomain, newName );
         
         for( String childName : components.keySet() )
         {

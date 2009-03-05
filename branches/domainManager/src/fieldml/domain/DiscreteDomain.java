@@ -6,9 +6,9 @@ public class DiscreteDomain
     private final int[] values;
 
 
-    public DiscreteDomain( CompositeDomain parent, String name, int[] values, int startIndex, int count )
+    public DiscreteDomain( DomainManager manager, CompositeDomain parent, String name, int[] values, int startIndex, int count )
     {
-        super( parent, name );
+        super( manager, parent, name );
 
         this.values = new int[count];
 
@@ -19,6 +19,6 @@ public class DiscreteDomain
     @Override
     public void importInto( CompositeDomain parentDomain, String newName )
     {
-        new DiscreteDomain( parentDomain, newName, values, 0, values.length ); 
+        new DiscreteDomain( getManager(), parentDomain, newName, values, 0, values.length ); 
     }
 }

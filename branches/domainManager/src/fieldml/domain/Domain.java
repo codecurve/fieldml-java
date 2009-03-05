@@ -1,42 +1,9 @@
 package fieldml.domain;
 
-import java.util.*;
 
 public abstract class Domain
 {
-    private static final int ID_FUDGE = 10000;
-
     private static final char DOMAIN_DELIMITER = '.';
-
-    private static final Map<Integer, Domain> domains;
-
-    private static final Map<String, Integer> domainIds;
-
-    static
-    {
-        domains = new HashMap<Integer, Domain>();
-
-        domainIds = new HashMap<String, Integer>();
-    }
-
-
-    public static Domain get( int id )
-    {
-        return domains.get( id );
-    }
-
-
-    public static int getId( String name )
-    {
-        Integer id = domainIds.get( name );
-        
-        if( id == null )
-        {
-            return 0;
-        }
-        
-        return id;
-    }
 
     /**
      * A globally unique integer identifying the domain, useful for internal (inter-process) and external (client-server)
@@ -53,15 +20,15 @@ public abstract class Domain
 
     private final CompositeDomain parent;
 
+    private final DomainManager manager;
 
-    public Domain( CompositeDomain parent, String name )
+    public Domain( DomainManager manager, CompositeDomain parent, String name )
     {
         this.name = name;
+        this.manager = manager;
+        
+        id = manager.add(this);
 
-        id = generateNewUniqueId();
-
-        domains.put( id, this );
-        domainIds.put( getFullName(), id );
 
         // TODO Although convenient, adding a child automatically to its parent is a little side-effecty,
         //and leads to the slightly weird phenomenon of 'dangling constructors'. At the moment, there
@@ -73,13 +40,8 @@ public abstract class Domain
         }
     }
 
-
-	private int generateNewUniqueId() {
-		return domains.size() + ID_FUDGE;
-	}
-
-
-    public String toString()
+    @Override
+	public String toString()
     {
         return "Domain " + getFullName() + " (" + id + ")";
     }
@@ -87,7 +49,11 @@ public abstract class Domain
 
     public String getFullName()
     {
-        return parent.getFullName() + DOMAIN_DELIMITER + name;
+    	String parentName = "/";
+    	if (parent != null ) {
+    		parentName = parent.getFullName();
+    	}
+		return parentName + DOMAIN_DELIMITER + name;
     }
 
 
@@ -104,4 +70,9 @@ public abstract class Domain
 
     // TODO this method needs Javadoc
     public abstract void importInto( CompositeDomain parentDomain, String newName );
+
+
+	public DomainManager getManager() {
+		return manager;
+	}
 }
