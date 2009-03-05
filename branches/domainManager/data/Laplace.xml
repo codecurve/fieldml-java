@@ -1,0 +1,258 @@
+<fieldml>
+  <!--
+    Produced by OpenCMISS, using the LaplaceExample project with a 4x4x0 mesh computed by 2 nodes. This file
+    represents the first node's output.
+   -->
+
+  <continuous_domain id="library::finite" value="real" min="0" max="1" />
+  
+  <continuous_domain id="library::semifinite" value="real" min="0" />
+
+  <continuous_domain id="library::infinite" value="real" />
+
+  <domain id="library::unit_square">
+    <import_domain id="x" domain="library::finite" />
+    <import_domain id="y" domain="library::finite" />
+  </domain>
+  
+  <discrete_domain id="mesh.element" value="index">
+      3  4  7  8  11  12  15  16
+  </discrete_domain>
+
+  <discrete_domain id="mesh.node" value="index">
+      3  4  5  8  9  10  14  15  19  20  24  25
+  </discrete_domain>
+  
+
+  <domain id="mesh.surface">
+    <import_domain id="element" domain="mesh.element"/>
+    <import_domain id="xi" domain="library::unit_square"/>
+  </domain>
+
+  <field id="element.nodes" domain="mesh.element">
+    <component id="node1" value="mesh.node"/>
+    <component id="node2" value="mesh.node"/>
+    <component id="node3" value="mesh.node"/>
+    <component id="node4" value="mesh.node"/>
+
+    <value_map component="element_id" value="3">
+      <assign>
+        3  4  8  9
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="4">
+      <assign>
+        4  5  9  10
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="7">
+      <assign>
+        8  9  13  14
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="8">
+      <assign>
+        9  10  14  15
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="11">
+      <assign>
+        13  14  18  19
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="12">
+      <assign>
+        14  15  19  20
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="15">
+      <assign>
+        18  19  23  24
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="16">
+      <assign>
+        19  20  24  25
+      </assign>
+    </value_map>
+  </field>
+
+  <field id="element.y_values" domain="mesh.element">
+    <import_component id="node1" field="node.parameters.y">
+      <field_parameter id="node_id" field="element.nodes.node1">
+        <domain_parameter id="element_id"/>
+      </field_parameter>
+    </import_component>
+    <import_component id="node2" field="node.parameters.y">
+      <field_parameter id="node_id" field="element.nodes.node2">
+        <domain_parameter id="element.element_id"/>
+      </field_parameter>
+    </import_component>
+    <import_component id="node3" field="node.parameters.y">
+      <field_parameter id="node_id" field="element.nodes.node3">
+        <domain_parameter id="element.element_id"/>
+      </field_parameter>
+    </import_component>
+    <import_component id="node4" field="node.parameters.y">
+      <field_parameter id="node_id" field="element.nodes.node4">
+        <domain_parameter id="element.element_id"/>
+      </field_parameter>
+    </import_component>
+  </field>
+
+  <field id="mesh.coordinates" domain="mesh.surface">
+    <field_type type="coordinates" subtype="rectangular"/>
+
+    <evaluated_component id="x" value="real">
+      <dot_product>
+        <field id="library::bilinear_lagrange">
+          <domain_parameter id="xi" source_id="xi"/>
+        </field>
+        <anonymous_field>
+          <import_component id="1" field="node.parameters.x">
+            <field_parameter id="node_id" field="element.nodes.node1"/>
+          </import_component>
+          <import_component id="2" field="node.parameters.x">
+            <field_parameter id="node_id" field="element.nodes.node2"/>
+          </import_component>
+          <import_component id="3" field="node.parameters.x">
+            <field_parameter id="node_id" field="element.nodes.node3"/>
+          </import_component>
+          <import_component id="4" field="node.parameters.x">
+            <field_parameter id="node_id" field="element.nodes.node4"/>
+          </import_component>
+        </anonymous_field>
+      </dot_product>
+    </evaluated_component>
+
+    <evaluated_component id="y" value="real">
+      <dot_product>
+        <field id="library::bilinear_lagrange">
+          <domain_parameter id="xi" source_id="xi"/>
+        </field>
+        <field id="element_y">
+          <domain_parameter id="element.element_id"/>
+        </field>
+      </dot_product>
+    </evaluated_component>
+
+  </field>
+
+  <field id="mesh" domain="mesh.surface">
+
+    <evaluated_component id="g" value="real">
+      <dot_product>
+        <field id="library::bilinear_lagrange">
+          <domain_parameter id="xi" source_id="xi"/>
+        </field>
+        <anonymous_field>
+          <import_component id="1" field="node.parameters.g">
+            <field_parameter id="node_id" field="element.nodes.node1"/>
+          </import_component>
+          <import_component id="2" field="node.parameters.g">
+            <field_parameter id="node_id" field="element.nodes.node2"/>
+          </import_component>
+          <import_component id="3" field="node.parameters.g">
+            <field_parameter id="node_id" field="element.nodes.node3"/>
+          </import_component>
+          <import_component id="4" field="node.parameters.g">
+            <field_parameter id="node_id" field="element.nodes.node4"/>
+          </import_component>
+        </anonymous_field>
+      </dot_product>
+    </evaluated_component>
+  </field>
+
+  <field id="mesh" domain="mesh.surface">
+
+    <evaluated_component id="n" value="real">
+      <dot_product>
+        <field id="library::bilinear_lagrange">
+          <domain_parameter id="xi" source_id="xi"/>
+        </field>
+        <anonymous_field>
+          <import_component id="1" field="node.parameters.n">
+            <field_parameter id="node_id" field="element.nodes.node1"/>
+          </import_component>
+          <import_component id="2" field="node.parameters.n">
+            <field_parameter id="node_id" field="element.nodes.node2"/>
+          </import_component>
+          <import_component id="3" field="node.parameters.n">
+            <field_parameter id="node_id" field="element.nodes.node3"/>
+          </import_component>
+          <import_component id="4" field="node.parameters.n">
+            <field_parameter id="node_id" field="element.nodes.node4"/>
+          </import_component>
+        </anonymous_field>
+      </dot_product>
+    </evaluated_component>
+  </field>
+
+  <field id="node.parameters" domain="mesh.node">
+    <component id="x" value="real"/>
+    <component id="y" value="real"/>
+    <component id="g" value="real"/>
+    <component id="n" value="real"/>
+    
+    <value_map component="element_id" value="3">
+      <assign>
+        1.0000000000000000E+00   0.0000000000000000E+00   3.1972356254077172E+00  -5.3524942944527254E-07
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="4">
+      <assign>
+        1.5000000000000000E+00   0.0000000000000000E+00   3.6365212588612064E+00  -5.3524942966731714E-07
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="5">
+      <assign>
+        2.0000000000000000E+00   0.0000000000000000E+00   3.8050656639529055E+00   9.1764340634819641E-02
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="8">
+      <assign>
+        1.0000000000000000E+00   2.5000000000000000E-01   3.2333119188635906E+00  -4.6824431862851323E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="9">
+      <assign>
+        1.5000000000000000E+00   2.5000000000000000E-01   3.6624772699266712E+00  -4.6824431862851257E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="10">
+      <assign>
+        2.0000000000000000E+00   2.5000000000000000E-01   3.8587585611294335E+00  -5.7325184862691669E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="14">
+      <assign>
+        1.5000000000000000E+00   5.0000000000000000E-01   3.7541981649838512E+00  -4.6824431862851390E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="15">
+      <assign>
+        2.0000000000000000E+00   5.0000000000000000E-01   4.0337189461891123E+00  -5.7325184862691603E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="19">
+      <assign>
+        1.5000000000000000E+00   7.5000000000000000E-01   3.8640888796308559E+00  -4.6824431862851279E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="20">
+      <assign>
+        2.0000000000000000E+00   7.5000000000000000E-01   4.4352922105181323E+00  -5.7325184862691669E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="24">
+      <assign>
+        1.5000000000000000E+00   1.0000000000000000E+00   3.7494245949541605E+00   1.2590685730495488E-01
+      </assign>
+    </value_map>
+    <value_map component="element_id" value="25">
+      <assign>
+        2.0000000000000000E+00   1.0000000000000000E+00   5.4868641978000836E+00  -1.2488136854377663E-01
+      </assign>
+    </value_map>
+  </field>
+</fieldml>
