@@ -107,8 +107,9 @@ public class FieldmlSaxHandler
         }
         else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
+        	// TODO: getValues does not exist yet, so for interim, hard coding return value.
             // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
-            int[] values = getValues( characters );
+            int[] values = {1,2,3};//getValues( characters );
 
             int id;
 

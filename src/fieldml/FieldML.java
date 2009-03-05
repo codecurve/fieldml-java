@@ -5,11 +5,16 @@ import fieldml.domain.*;
 // In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
 public class FieldML
 {
+	private static boolean isValidParent(Domain parent) {
+		return ( parent != null ) && ( parent instanceof CompositeDomain );
+	}
+
+	
     public static int FieldML_CreateCompositeDomain( int parentId, String name )
     {
         Domain parent = Domain.get( parentId );
 
-        if( ( parent == null ) || !( parent instanceof CompositeDomain ) )
+        if( !isValidParent(parent) )
         {
             //ERROR
         }
@@ -29,7 +34,7 @@ public class FieldML
     {
         Domain parent = Domain.get( parentId );
 
-        if( ( parent == null ) || !( parent instanceof CompositeDomain ) )
+        if( !isValidParent(parent) )
         {
             //ERROR
         }
@@ -48,7 +53,7 @@ public class FieldML
     {
         Domain parent = Domain.get( parentId );
 
-        if( ( parent == null ) || !( parent instanceof CompositeDomain ) )
+        if( !isValidParent(parent) )
         {
             //ERROR
 
