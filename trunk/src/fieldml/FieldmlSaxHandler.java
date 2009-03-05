@@ -8,8 +8,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import fieldml.domain.DomainManager;
-
 public class FieldmlSaxHandler
     extends DefaultHandler
 {
@@ -28,8 +26,6 @@ public class FieldmlSaxHandler
     private ParsingState state;
 
     private int currentId;
-    
-    private DomainManager manager;
 
 
     public void startElement( String uri, String localName, String qName, Attributes attributes )
@@ -47,7 +43,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "index" ) == 0 )
                 {
-                    currentId = FieldML.FieldML_CreateDiscreteDomain( manager, attributes.getValue( "name" ) );
+                    currentId = FieldML.FieldML_CreateDiscreteDomain( attributes.getValue( "name" ) );
                     state = ParsingState.DISCRETE_DOMAIN;
                 }
                 else
@@ -66,7 +62,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "real" ) == 0 )
                 {
-                    currentId = FieldML.FieldML_CreateContinuousDomain( manager, attributes.getValue( "name" ) );
+                    currentId = FieldML.FieldML_CreateContinuousDomain( attributes.getValue( "name" ) );
                     state = ParsingState.CONTINUOUS_DOMAIN;
                 }
                 else
@@ -96,7 +92,7 @@ public class FieldmlSaxHandler
                     max = Double.parseDouble( attributes.getValue( "max" ) );
                 }
 
-                FieldML.FieldML_AddContinuousComponent( manager, currentId, attributes.getValue( "id" ), min, max );
+                FieldML.FieldML_AddContinuousComponent( currentId, attributes.getValue( "id" ), min, max );
             }
         }
         else if( state == ParsingState.DISCRETE_DOMAIN )
@@ -138,31 +134,29 @@ public class FieldmlSaxHandler
         {
             if( qName.compareTo( "component" ) == 0 )
             {
-        	// 
-            // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
-            int[] values = getValues( characters.toString() );
+                // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
+                int[] values = getValues( characters.toString() );
                 
-                FieldML.FieldML_AddDiscreteComponent( manager, currentId, currentName, 0, values.length, values ); 
+                FieldML.FieldML_AddDiscreteComponent( currentId, currentName, 0, values.length, values ); 
             }
         }
     }
 
 
-    private int[] getValues(String string) {
-    	// TODO: getValues does not exist yet, so for interim, hard coding return value.
-    	return new int[]{1,2,3};
-	}
+    private int[] getValues( String string )
+    {
+        return new int[] { 1, 2, 3 };
+    }
 
 
-	public void characters( char[] ch, int start, int length )
+    public void characters( char[] ch, int start, int length )
     {
         characters.append( String.copyValueOf( ch, start, length ) );
     }
 
 
-    private FieldmlSaxHandler( DomainManager manager )
+    private FieldmlSaxHandler()
     {
-    	this.manager = manager;
         characters = new StringBuilder();
     }
 
@@ -172,9 +166,7 @@ public class FieldmlSaxHandler
         try
         {
             XMLReader xr = XMLReaderFactory.createXMLReader();
-            
-            DomainManager theManager = new DomainManager ();
-			FieldmlSaxHandler handler = new FieldmlSaxHandler(theManager);
+            FieldmlSaxHandler handler = new FieldmlSaxHandler();
             xr.setContentHandler( handler );
             xr.setErrorHandler( handler );
 

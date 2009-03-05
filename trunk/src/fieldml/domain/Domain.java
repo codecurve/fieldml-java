@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 public abstract class Domain
 {
-
     /**
      * A globally unique integer identifying the domain, useful for internal (inter-process) and external (client-server)
      * communication. In order to remain globally unique, this id number cannot be user-supplied. Domains can be imported from
@@ -18,22 +17,24 @@ public abstract class Domain
      */
     private final String name;
 
-    private final ArrayList<String> componentNames = new ArrayList<String>();
-    
+    private final ArrayList<String> componentNames;
+
     private final DomainManager manager;
 
     public Domain( DomainManager manager, String name )
     {
         this.name = name;
         this.manager = manager;
-        id = this.manager.add(this);
+
+        id = manager.add( this );
+
+        componentNames = new ArrayList<String>();
     }
 
 
-    @Override
     public String toString()
     {
-        return "Domain " + getName() + " (" + id + ")";
+        return "Domain " + name + " (" + id + ")";
     }
 
 
@@ -42,11 +43,18 @@ public abstract class Domain
         return id;
     }
 
-    
+
+    public String getName()
+    {
+        return name;
+    }
+
+
     public int getComponentCount()
     {
         return componentNames.size();
     }
+
 
     public String getComponentName( int componentNumber )
     {
@@ -62,14 +70,9 @@ public abstract class Domain
     // This should not be directly invoked except by descendant classes.
     int addComponent( String componentName )
     {
-        //TODO Uniqueness check!
+        // TODO Uniqueness check!
         componentNames.add( componentName );
-        
+
         return componentNames.size();
     }
-
-
-	public String getName() {
-		return name;
-	}
 }
