@@ -58,20 +58,25 @@ public abstract class Domain
     {
         this.name = name;
 
-        id = domains.size() + ID_FUDGE;
+        id = generateNewUniqueId();
 
         domains.put( id, this );
         domainIds.put( getFullName(), id );
 
-        //Although convenient, adding a child automatically to its parent is a little side-effecty,
-        //and leads to the slightly wierd phenomenon of 'dangling constructors'. At the moment, there
+        // TODO Although convenient, adding a child automatically to its parent is a little side-effecty,
+        //and leads to the slightly weird phenomenon of 'dangling constructors'. At the moment, there
         //seems no compelling reason to change this.
         this.parent = parent;
         if( parent != null )
         {
-            parent.components.put( name, this );
+            parent.insert( name, this );
         }
     }
+
+
+	private int generateNewUniqueId() {
+		return domains.size() + ID_FUDGE;
+	}
 
 
     public String toString()
@@ -97,6 +102,6 @@ public abstract class Domain
         return id;
     }
 
-
+    // TODO this method needs Javadoc
     public abstract void importInto( CompositeDomain parentDomain, String newName );
 }

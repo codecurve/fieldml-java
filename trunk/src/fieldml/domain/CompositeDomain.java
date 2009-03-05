@@ -10,14 +10,12 @@ public class CompositeDomain
      * 
      * The term subdomain is reserved for subsets of domains, rather than components.
      */
-    final Map<String, Domain> components;
+    private final Map<String, Domain> components = new HashMap<String, Domain>(); 
 
 
     public CompositeDomain( CompositeDomain parent, String name )
     {
         super( parent, name );
-
-        components = new HashMap<String, Domain>();
     }
 
 
@@ -30,7 +28,13 @@ public class CompositeDomain
         {
             //Imported children retain their name. Potential ambiguity is resolved by
             //ensuring that their (newly created) parent has a unique name.
-            components.get( childName ).importInto( newDomain, childName );
+            Domain childComponent = components.get( childName );
+			childComponent.importInto( newDomain, childName );
         }
     }
+
+
+	public void insert(String name, Domain domain) {
+		components.put( name, domain );
+	}
 }
