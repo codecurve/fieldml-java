@@ -4,6 +4,7 @@ import fieldml.domain.ContinuousDomain;
 import fieldml.domain.DiscreteDomain;
 import fieldml.domain.Domain;
 import fieldml.domain.DomainManager;
+import fieldml.field.FieldManager;
 
 /**
  * In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
@@ -13,10 +14,12 @@ import fieldml.domain.DomainManager;
 public class FieldML
 {
     private static final DomainManager domainManager;
+    private static final FieldManager fieldManager;
     
     static
     {
         domainManager = new DomainManager();
+        fieldManager = new FieldManager();
     }
     
     public static int FieldML_CreateContinuousDomain( String name )

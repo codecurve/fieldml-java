@@ -1,43 +1,8 @@
 package fieldml.field;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class Field
 {
-    // Field IDs will coincide with domain ids. Detecting the user-error of domain/field ID confusion
-    // could be done with the right code, but is not really our problem.
-    private static final int ID_FUDGE = 10000;
-
-    private static final Map<Integer, Field> fields;
-
-    private static final Map<String, Integer> fieldIds;
-
-    static
-    {
-        fields = new HashMap<Integer, Field>();
-
-        fieldIds = new HashMap<String, Integer>();
-    }
-
-
-    public static Field get( int id )
-    {
-        return fields.get( id );
-    }
-
-
-    public static int getId( String name )
-    {
-        Integer id = fieldIds.get( name );
-
-        if( id == null )
-        {
-            return 0;
-        }
-
-        return id;
-    }
 
     /**
      * A globally unique integer identifying the field, useful for internal (inter-process) and external (client-server)
@@ -53,17 +18,16 @@ public abstract class Field
     private final String name;
 
 
-    public Field( String name )
+    public Field( FieldManager manager, String name )
     {
         this.name = name;
 
-        id = fields.size() + ID_FUDGE;
+        id = manager.add(this);
 
-        fields.put( id, this );
-        fieldIds.put( name, id );
     }
 
 
+    @Override
     public String toString()
     {
         return "Field " + name + " (" + id + ")";
@@ -74,4 +38,9 @@ public abstract class Field
     {
         return id;
     }
+
+
+	public String getName() {
+		return name;
+	}
 }
