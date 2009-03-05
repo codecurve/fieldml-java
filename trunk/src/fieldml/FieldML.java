@@ -1,35 +1,38 @@
 package fieldml;
 
-import fieldml.domain.*;
+import fieldml.domain.ContinuousDomain;
+import fieldml.domain.DiscreteDomain;
+import fieldml.domain.Domain;
+import fieldml.domain.DomainManager;
 
 // In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
 public class FieldML
 {
-    public static int FieldML_CreateContinuousDomain( String name )
+    public static int FieldML_CreateContinuousDomain( DomainManager manager, String name )
     {
-        Domain domain = new ContinuousDomain( name );
+        Domain domain = new ContinuousDomain( manager, name );
 
         return domain.getId();
     }
 
 
-    public static int FieldML_CreateDiscreteDomain( String name )
+    public static int FieldML_CreateDiscreteDomain( DomainManager manager, String name )
     {
-        Domain domain = new DiscreteDomain( name );
+        Domain domain = new DiscreteDomain( manager, name );
 
         return domain.getId();
     }
 
 
-    public static int FieldML_GetDomainId( String originalDomainName )
+    public static int FieldML_GetDomainId( DomainManager manager, String originalDomainName )
     {
-        return Domain.getId( originalDomainName );
+        return manager.getId( originalDomainName );
     }
 
 
-    public static int FieldML_AddContinuousComponent( int domainId, String componentName, double min, double max )
+    public static int FieldML_AddContinuousComponent( DomainManager manager, int domainId, String componentName, double min, double max )
     {
-        Domain domain = Domain.get( domainId );
+        Domain domain = manager.get( domainId );
 
         if( !( domain instanceof ContinuousDomain ) )
         {
@@ -45,9 +48,9 @@ public class FieldML
     }
     
     
-    public static int FieldML_AddDiscreteComponent( int domainId, String componentName, int start, int count, int[] values )
+    public static int FieldML_AddDiscreteComponent( DomainManager manager, int domainId, String componentName, int start, int count, int[] values )
     {
-        Domain domain = Domain.get( domainId );
+        Domain domain = manager.get( domainId );
 
         if( !( domain instanceof DiscreteDomain ) )
         {

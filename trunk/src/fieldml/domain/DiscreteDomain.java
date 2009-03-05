@@ -8,9 +8,9 @@ public class DiscreteDomain
     private final ArrayList<int[]> componentValues;
 
 
-    public DiscreteDomain( String name )
+    public DiscreteDomain( DomainManager manager, String name )
     {
-        super( name );
+        super( manager, name );
 
         componentValues = new ArrayList<int[]>();
     }
