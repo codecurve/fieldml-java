@@ -1,6 +1,7 @@
 package fieldml.domain;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Continuous domains represent a real-valued domain with a lower bound, upper and lower bounds, or completely unbounded. Unlike
@@ -8,7 +9,7 @@ import java.util.ArrayList;
  * request a 'representative sample' of the domain with a resolution and clamping of their choice (including the ability to
  * simply request the domain's extrema, subject to user-defined clamping). Thus, for instance, a client wishing to render a
  * field over a continuous domain can obtain a finite number of parameters to pass to relevant fields, and use the output to
- * derive an arbitarily fine (or coarse) geometry.
+ * derive an arbitrarily fine (or coarse) geometry.
  */
 public class ContinuousDomain
     extends Domain
@@ -16,14 +17,12 @@ public class ContinuousDomain
     // These can be Double.NEGATIVE_INFINITY or Double.POSITIVE_INFINITY
     // Open intervals are not currently supported, but this is should be fairly trivial.
     // There seems no compelling reason to assert an 'orientation' on the domain, i.e. that min < max.
-    private ArrayList<double[]> componentExtrema;
+    private List<double[]> componentExtrema = new ArrayList<double[]>();
 
 
     public ContinuousDomain( DomainManager manager, String name )
     {
         super( manager, name );
-
-        componentExtrema = new ArrayList<double[]>();
     }
 
 

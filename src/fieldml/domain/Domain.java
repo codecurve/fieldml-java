@@ -1,6 +1,7 @@
 package fieldml.domain;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Domain
 {
@@ -17,8 +18,8 @@ public abstract class Domain
      */
     private final String name;
 
-    private final ArrayList<String> componentNames;
-
+    private final List<String> componentNames = new ArrayList<String>();
+    
     private final DomainManager manager;
 
     public Domain( DomainManager manager, String name )
@@ -27,14 +28,13 @@ public abstract class Domain
         this.manager = manager;
 
         id = manager.add( this );
-
-        componentNames = new ArrayList<String>();
     }
 
 
+    @Override
     public String toString()
     {
-        return "Domain " + name + " (" + id + ")";
+        return "Domain " + getName() + " (" + id + ")";
     }
 
 
