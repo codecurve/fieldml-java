@@ -4,9 +4,11 @@ import java.util.*;
 
 public abstract class Field
 {
-    // Field IDs will coincide with domain ids. Detecting the user-error of domain/field ID confusion
-    // could be done with the right code, but is not really our problem.
+    //Field IDs will coincide with domain ids. Detecting the user-error of domain/field ID confusion
+    //could be done with the right code, but is not really our problem.
     private static final int ID_FUDGE = 10000;
+
+    private static final char FIELD_DELIMITER = '.';
 
     private static final Map<Integer, Field> fields;
 
@@ -29,12 +31,12 @@ public abstract class Field
     public static int getId( String name )
     {
         Integer id = fieldIds.get( name );
-
+        
         if( id == null )
         {
             return 0;
         }
-
+        
         return id;
     }
 
@@ -51,21 +53,41 @@ public abstract class Field
      */
     private final String name;
 
+    private final CompositeField parent;
 
-    public Field( String name )
+
+    public Field( CompositeField parent, String name )
     {
         this.name = name;
 
         id = fields.size() + ID_FUDGE;
 
         fields.put( id, this );
-        fieldIds.put( name, id );
+        fieldIds.put( getFullName(), id );
+
+        this.parent = parent;
+        if( parent != null )
+        {
+            parent.components.put( name, this );
+        }
     }
 
 
     public String toString()
     {
-        return "Field " + name + " (" + id + ")";
+        return "Field " + getFullName() + " (" + id + ")";
+    }
+
+
+    public String getFullName()
+    {
+        return parent.getFullName() + FIELD_DELIMITER + name;
+    }
+
+
+    public CompositeField getParent()
+    {
+        return parent;
     }
 
 

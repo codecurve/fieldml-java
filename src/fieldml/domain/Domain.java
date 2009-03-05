@@ -6,6 +6,8 @@ public abstract class Domain
 {
     private static final int ID_FUDGE = 10000;
 
+    private static final char DOMAIN_DELIMITER = '.';
+
     private static final Map<Integer, Domain> domains;
 
     private static final Map<String, Integer> domainIds;
@@ -27,12 +29,12 @@ public abstract class Domain
     public static int getId( String name )
     {
         Integer id = domainIds.get( name );
-
+        
         if( id == null )
         {
             return 0;
         }
-
+        
         return id;
     }
 
@@ -49,25 +51,49 @@ public abstract class Domain
      */
     private final String name;
 
-    private final ArrayList<String> componentNames;
+    private final CompositeDomain parent;
 
 
-    public Domain( String name )
+    public Domain( CompositeDomain parent, String name )
     {
         this.name = name;
 
-        id = domains.size() + ID_FUDGE;
+        id = generateNewUniqueId();
 
         domains.put( id, this );
-        domainIds.put( name, id );
+        domainIds.put( getFullName(), id );
 
-        componentNames = new ArrayList<String>();
+        // TODO Although convenient, adding a child automatically to its parent is a little side-effecty,
+        //and leads to the slightly weird phenomenon of 'dangling constructors'. At the moment, there
+        //seems no compelling reason to change this.
+        this.parent = parent;
+        if( parent != null )
+        {
+            parent.insert( name, this );
+        }
     }
+
+
+	private int generateNewUniqueId() {
+		return domains.size() + ID_FUDGE;
+	}
 
 
     public String toString()
     {
-        return "Domain " + name + " (" + id + ")";
+        return "Domain " + getFullName() + " (" + id + ")";
+    }
+
+
+    public String getFullName()
+    {
+        return parent.getFullName() + DOMAIN_DELIMITER + name;
+    }
+
+
+    public CompositeDomain getParent()
+    {
+        return parent;
     }
 
 
@@ -76,29 +102,6 @@ public abstract class Domain
         return id;
     }
 
-    
-    public int getComponentCount()
-    {
-        return componentNames.size();
-    }
-
-    public String getComponentName( int componentNumber )
-    {
-        if( ( componentNumber < 0 ) || ( componentNumber >= componentNames.size() ) )
-        {
-            return null;
-        }
-
-        return componentNames.get( componentNumber );
-    }
-
-
-    // This should not be directly invoked except by descendant classes.
-    int addComponent( String componentName )
-    {
-        //TODO Uniqueness check!
-        componentNames.add( componentName );
-        
-        return componentNames.size();
-    }
+    // TODO this method needs Javadoc
+    public abstract void importInto( CompositeDomain parentDomain, String newName );
 }

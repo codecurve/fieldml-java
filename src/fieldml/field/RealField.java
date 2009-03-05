@@ -6,9 +6,9 @@ package fieldml.field;
 public class RealField
     extends Field
 {
-    public RealField( String name )
+    public RealField( CompositeField parent, String name )
     {
-        super( name );
+        super( parent, name );
     }
     
 }

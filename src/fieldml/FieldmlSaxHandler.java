@@ -12,131 +12,125 @@ public class FieldmlSaxHandler
     private enum ParsingState
     {
         NONE,
+        COMPOSITE_DOMAIN,
         DISCRETE_DOMAIN,
-        DISCRETE_COMPONENT,
-        CONTINUOUS_DOMAIN,
+        COMPOSITE_FIELD,
     }
 
     private final StringBuilder characters;
 
-    private String currentName;
+    private String domainName;
+
+    private final Deque<Integer> idStack;
 
     private ParsingState state;
-
-    private int currentId;
 
 
     public void startElement( String uri, String localName, String qName, Attributes attributes )
     {
-        if( state == ParsingState.NONE )
+        if( qName.compareTo( "domain" ) == 0 )
         {
-            if( qName.compareTo( "discrete_domain" ) == 0 )
+            if( ( state != ParsingState.NONE ) && ( state != ParsingState.COMPOSITE_DOMAIN ) )
             {
-                if( ( attributes.getValue( "name" ) == null ) || ( attributes.getValue( "value" ) == null ) )
-                {
-                    // ERROR
-                }
-
-                String domainValue = attributes.getValue( "value" );
-
-                if( domainValue.compareTo( "index" ) == 0 )
-                {
-                    currentId = FieldML.FieldML_CreateDiscreteDomain( attributes.getValue( "name" ) );
-                    state = ParsingState.DISCRETE_DOMAIN;
-                }
-                else
-                {
-                    // ERROR
-                }
+                // ERROR
             }
-            else if( qName.compareTo( "continuous_domain" ) == 0 )
+            else if( attributes.getValue( "name" ) == null )
             {
-                if( ( attributes.getValue( "name" ) == null ) || ( attributes.getValue( "value" ) == null ) )
-                {
-                    // ERROR
-                }
-
-                String domainValue = attributes.getValue( "value" );
-
-                if( domainValue.compareTo( "real" ) == 0 )
-                {
-                    currentId = FieldML.FieldML_CreateContinuousDomain( attributes.getValue( "name" ) );
-                    state = ParsingState.CONTINUOUS_DOMAIN;
-                }
-                else
-                {
-                    // ERROR
-                }
+                // ERROR
             }
+
+            int id;
+
+            if( idStack.size() > 0 )
+            {
+                id = FieldML.FieldML_CreateCompositeDomain( idStack.peek(), attributes.getValue( "name" ) );
+            }
+            else
+            {
+                id = FieldML.FieldML_CreateCompositeDomain( 0, attributes.getValue( "name" ) );
+            }
+
+            idStack.push( id );
         }
-        else if( state == ParsingState.CONTINUOUS_DOMAIN )
+        else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
-            if( qName.compareTo( "component" ) == 0 )
+            /*
+             * Creation of discrete domains must be ferred until we know all the values.
+             */
+            if( ( state != ParsingState.NONE ) && ( state != ParsingState.COMPOSITE_DOMAIN ) )
             {
-                if( attributes.getValue( "id" ) == null )
-                {
-                    // ERROR
-                }
-
-                double min = Double.NEGATIVE_INFINITY;
-                double max = Double.POSITIVE_INFINITY;
-
-                if( attributes.getValue( "min" ) != null )
-                {
-                    min = Double.parseDouble( attributes.getValue( "min" ) );
-                }
-                if( attributes.getValue( "max" ) != null )
-                {
-                    max = Double.parseDouble( attributes.getValue( "max" ) );
-                }
-
-                FieldML.FieldML_AddContinuousComponent( currentId, attributes.getValue( "id" ), min, max );
+                // ERROR
             }
+            else if( attributes.getValue( "name" ) == null )
+            {
+                // ERROR
+            }
+
+            domainName = attributes.getValue( "name" );
+
+            state = ParsingState.DISCRETE_DOMAIN;
         }
-        else if( state == ParsingState.DISCRETE_DOMAIN )
+        else if( qName.compareTo( "import_domain" ) == 0 )
         {
-            if( qName.compareTo( "component" ) == 0 )
+            // We could allow importing domains at file scope. This is functionally equivalent to aliases.
+            if( state != ParsingState.COMPOSITE_DOMAIN )
             {
-                if( attributes.getValue( "id" ) == null )
-                {
-                    // ERROR
-                }
-
-                currentName = attributes.getValue( "id" );
-
-                characters.setLength( 0 );
-
-                state = ParsingState.DISCRETE_COMPONENT;
+                // ERROR
             }
+            else if( ( attributes.getValue( "id" ) == null ) || ( attributes.getValue( "domain" ) == null ) )
+            {
+                // ERROR
+            }
+
+            String newName = attributes.getValue( "id" );
+            String originalDomainName = attributes.getValue( "domain" );
+
+            int originalDomainId = FieldML.FieldML_GetDomainId( originalDomainName );
+            
+            FieldML.FieldML_ImportDomain( idStack.peek(), originalDomainId, newName );
         }
+
+        characters.setLength( 0 );
     }
 
 
     public void endElement( String uri, String localName, String qName )
     {
-        if( state == ParsingState.CONTINUOUS_DOMAIN )
+        if( qName.compareTo( "domain" ) == 0 )
         {
-            if( qName.compareTo( "continuous_domain" ) == 0 )
+            idStack.pop();
+
+            if( idStack.size() == 0 )
             {
                 state = ParsingState.NONE;
             }
         }
-        else if( state == ParsingState.DISCRETE_DOMAIN )
+        else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
-            if( qName.compareTo( "discrete_domain" ) == 0 )
-            {
-                state = ParsingState.NONE;
-            }
-        }
-        else if( state == ParsingState.DISCRETE_COMPONENT )
-        {
-            if( qName.compareTo( "component" ) == 0 )
-            {
         	// TODO: getValues does not exist yet, so for interim, hard coding return value.
             // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
-            int[] values = {1,2,3};//getValues( characters.toString() );
-                
-                FieldML.FieldML_AddDiscreteComponent( currentId, currentName, 0, values.length, values ); 
+            int[] values = {1,2,3};//getValues( characters );
+
+            int id;
+
+            if( idStack.size() > 0 )
+            {
+                id = FieldML.FieldML_CreateDiscreteDomain( idStack.peek(), domainName, values, 0, values.length );
+            }
+            else
+            {
+                id = FieldML.FieldML_CreateDiscreteDomain( 0, domainName, values, 0, values.length );
+            }
+
+            characters.setLength( 0 );
+
+            if( idStack.size() == 0 )
+            {
+                state = ParsingState.NONE;
+            }
+            else
+            {
+                state = ParsingState.COMPOSITE_DOMAIN;
             }
         }
     }
@@ -151,6 +145,8 @@ public class FieldmlSaxHandler
     private FieldmlSaxHandler()
     {
         characters = new StringBuilder();
+
+        idStack = new ArrayDeque<Integer>();
     }
 
 
