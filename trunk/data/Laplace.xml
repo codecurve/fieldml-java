@@ -4,73 +4,67 @@
     represents the first node's output.
    -->
 
-  <continuous_domain id="library::finite" value="real" min="0" max="1" />
-  
-  <continuous_domain id="library::semifinite" value="real" min="0" />
-
-  <continuous_domain id="library::infinite" value="real" />
-
-  <domain id="library::unit_square">
-    <import_domain id="x" domain="library::finite" />
-    <import_domain id="y" domain="library::finite" />
-  </domain>
+  <continuous_domain id="library::unit_square" value="real" >
+    <component id="x" min="0" max="1" />
+    <component id="y" min="0" max="1" />
+  </continuous_domain>
   
   <discrete_domain id="mesh.element" value="index">
+    <component id="id">
       3  4  7  8  11  12  15  16
+    </component>
   </discrete_domain>
 
   <discrete_domain id="mesh.node" value="index">
+    <component id="id">
       3  4  5  8  9  10  14  15  19  20  24  25
+    </component>
   </discrete_domain>
-  
 
-  <domain id="mesh.surface">
-    <import_domain id="element" domain="mesh.element"/>
-    <import_domain id="xi" domain="library::unit_square"/>
-  </domain>
-
-  <field id="element.nodes" domain="mesh.element">
+  <field id="element.nodes">
+    <parameter id="element" domain="mesh.element" />
+    
     <component id="node1" value="mesh.node"/>
     <component id="node2" value="mesh.node"/>
     <component id="node3" value="mesh.node"/>
     <component id="node4" value="mesh.node"/>
 
-    <value_map component="element_id" value="3">
+    <value_map parameter="element" value="3">
       <assign>
         3  4  8  9
       </assign>
     </value_map>
-    <value_map component="element_id" value="4">
+    <value_map parameter="element" value="4">
       <assign>
         4  5  9  10
       </assign>
     </value_map>
-    <value_map component="element_id" value="7">
+    <value_map parameter="element" value="7">
       <assign>
         8  9  13  14
       </assign>
     </value_map>
-    <value_map component="element_id" value="8">
+    <value_map parameter="element" value="8">
       <assign>
         9  10  14  15
       </assign>
     </value_map>
-    <value_map component="element_id" value="11">
+    <value_map parameter="element" value="11">
       <assign>
         13  14  18  19
       </assign>
     </value_map>
-    <value_map component="element_id" value="12">
+    <value_map parameter="element" value="12">
       <assign>
         14  15  19  20
       </assign>
     </value_map>
-    <value_map component="element_id" value="15">
+    <value_map parameter="element" value="15">
       <assign>
         18  19  23  24
       </assign>
     </value_map>
-    <value_map component="element_id" value="16">
+    <value_map parameter="element" value="16">
       <assign>
         19  20  24  25
       </assign>
