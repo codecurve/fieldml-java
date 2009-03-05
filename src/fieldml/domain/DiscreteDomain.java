@@ -1,6 +1,7 @@
 package fieldml.domain;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DiscreteDomain
     extends Domain

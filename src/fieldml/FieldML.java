@@ -5,34 +5,45 @@ import fieldml.domain.DiscreteDomain;
 import fieldml.domain.Domain;
 import fieldml.domain.DomainManager;
 
-// In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
+/**
+ * In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
+ * Because the API is to be called from Fortran as well, only primitive types can be used as parameters.
+ * 
+ */
 public class FieldML
 {
-    public static int FieldML_CreateContinuousDomain( DomainManager manager, String name )
+    private static final DomainManager domainManager;
+    
+    static
     {
-        Domain domain = new ContinuousDomain( manager, name );
+        domainManager = new DomainManager();
+    }
+    
+    public static int FieldML_CreateContinuousDomain( String name )
+    {
+        Domain domain = new ContinuousDomain( domainManager, name );
 
         return domain.getId();
     }
 
 
-    public static int FieldML_CreateDiscreteDomain( DomainManager manager, String name )
+    public static int FieldML_CreateDiscreteDomain( String name )
     {
-        Domain domain = new DiscreteDomain( manager, name );
+        Domain domain = new DiscreteDomain( domainManager, name );
 
         return domain.getId();
     }
 
 
-    public static int FieldML_GetDomainId( DomainManager manager, String originalDomainName )
+    public static int FieldML_GetDomainId( String originalDomainName )
     {
-        return manager.getId( originalDomainName );
+        return domainManager.getId( originalDomainName );
     }
 
 
-    public static int FieldML_AddContinuousComponent( DomainManager manager, int domainId, String componentName, double min, double max )
+    public static int FieldML_AddContinuousComponent( int domainId, String componentName, double min, double max )
     {
-        Domain domain = manager.get( domainId );
+        Domain domain = domainManager.get( domainId );
 
         if( !( domain instanceof ContinuousDomain ) )
         {
@@ -42,15 +53,15 @@ public class FieldML
         else
         {
             ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-            
+
             return continuousDomain.addComponent( componentName, min, max );
         }
     }
-    
-    
-    public static int FieldML_AddDiscreteComponent( DomainManager manager, int domainId, String componentName, int start, int count, int[] values )
+
+
+    public static int FieldML_AddDiscreteComponent( int domainId, String componentName, int start, int count, int[] values )
     {
-        Domain domain = manager.get( domainId );
+        Domain domain = domainManager.get( domainId );
 
         if( !( domain instanceof DiscreteDomain ) )
         {
@@ -60,7 +71,7 @@ public class FieldML
         else
         {
             DiscreteDomain discreteDomain = (DiscreteDomain)domain;
-            
+
             return discreteDomain.addComponent( componentName, start, count, values );
         }
     }
