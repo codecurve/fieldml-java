@@ -2,18 +2,18 @@ package fieldml.domain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class DiscreteDomain
     extends Domain
 {
-    private final ArrayList<int[]> componentValues;
+    private final List<int[]> componentValues = new ArrayList<int[]>();
 
 
     public DiscreteDomain( DomainManager manager, String name )
     {
         super( manager, name );
 
-        componentValues = new ArrayList<int[]>();
     }
     
     
