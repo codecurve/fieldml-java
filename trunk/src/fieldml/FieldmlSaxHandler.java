@@ -145,6 +145,7 @@ public class FieldmlSaxHandler
 
     private int[] getValues( String string )
     {
+    	// TODO: getValues does not exist yet, so for interim, hard coding return value.
         return new int[] { 1, 2, 3 };
     }
 
