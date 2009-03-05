@@ -19,9 +19,9 @@ public class ContinuousDomain
     private ArrayList<double[]> componentExtrema;
 
 
-    public ContinuousDomain( String name )
+    public ContinuousDomain( DomainManager manager, String name )
     {
-        super( name );
+        super( manager, name );
 
         componentExtrema = new ArrayList<double[]>();
     }

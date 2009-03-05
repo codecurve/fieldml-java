@@ -1,42 +1,9 @@
 package fieldml.domain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public abstract class Domain
 {
-    private static final int ID_FUDGE = 10000;
-
-    private static final Map<Integer, Domain> domains;
-
-    private static final Map<String, Integer> domainIds;
-
-    static
-    {
-        domains = new HashMap<Integer, Domain>();
-
-        domainIds = new HashMap<String, Integer>();
-    }
-
-
-    public static Domain get( int id )
-    {
-        return domains.get( id );
-    }
-
-
-    public static int getId( String name )
-    {
-        Integer id = domainIds.get( name );
-
-        if( id == null )
-        {
-            return 0;
-        }
-
-        return id;
-    }
 
     /**
      * A globally unique integer identifying the domain, useful for internal (inter-process) and external (client-server)
@@ -51,25 +18,22 @@ public abstract class Domain
      */
     private final String name;
 
-    private final ArrayList<String> componentNames;
+    private final ArrayList<String> componentNames = new ArrayList<String>();
+    
+    private final DomainManager manager;
 
-
-    public Domain( String name )
+    public Domain( DomainManager manager, String name )
     {
         this.name = name;
-
-        id = domains.size() + ID_FUDGE;
-
-        domains.put( id, this );
-        domainIds.put( name, id );
-
-        componentNames = new ArrayList<String>();
+        this.manager = manager;
+        id = this.manager.add(this);
     }
 
 
+    @Override
     public String toString()
     {
-        return "Domain " + name + " (" + id + ")";
+        return "Domain " + getName() + " (" + id + ")";
     }
 
 
@@ -103,4 +67,9 @@ public abstract class Domain
         
         return componentNames.size();
     }
+
+
+	public String getName() {
+		return name;
+	}
 }
