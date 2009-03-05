@@ -1,24 +1,27 @@
 package fieldml.domain;
 
+import java.util.*;
+
 public class DiscreteDomain
     extends Domain
 {
-    private final int[] values;
+    private final ArrayList<int[]> componentValues;
 
 
-    public DiscreteDomain( CompositeDomain parent, String name, int[] values, int startIndex, int count )
+    public DiscreteDomain( String name )
     {
-        super( parent, name );
+        super( name );
 
-        this.values = new int[count];
-
-        System.arraycopy( values, startIndex, this.values, 0, count );
+        componentValues = new ArrayList<int[]>();
     }
-
-
-    @Override
-    public void importInto( CompositeDomain parentDomain, String newName )
+    
+    
+    public int addComponent( String componentName, int valueStart, int valueCount, int[] values )
     {
-        new DiscreteDomain( parentDomain, newName, values, 0, values.length ); 
+        super.addComponent( componentName );
+        
+        componentValues.add( Arrays.copyOfRange( values, valueStart, valueStart + valueCount - 1 ) );
+        
+        return componentValues.size();
     }
 }

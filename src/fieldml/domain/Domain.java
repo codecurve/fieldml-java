@@ -6,8 +6,6 @@ public abstract class Domain
 {
     private static final int ID_FUDGE = 10000;
 
-    private static final char DOMAIN_DELIMITER = '.';
-
     private static final Map<Integer, Domain> domains;
 
     private static final Map<String, Integer> domainIds;
@@ -29,12 +27,12 @@ public abstract class Domain
     public static int getId( String name )
     {
         Integer id = domainIds.get( name );
-        
+
         if( id == null )
         {
             return 0;
         }
-        
+
         return id;
     }
 
@@ -51,49 +49,25 @@ public abstract class Domain
      */
     private final String name;
 
-    private final CompositeDomain parent;
+    private final ArrayList<String> componentNames;
 
 
-    public Domain( CompositeDomain parent, String name )
+    public Domain( String name )
     {
         this.name = name;
 
-        id = generateNewUniqueId();
+        id = domains.size() + ID_FUDGE;
 
         domains.put( id, this );
-        domainIds.put( getFullName(), id );
+        domainIds.put( name, id );
 
-        // TODO Although convenient, adding a child automatically to its parent is a little side-effecty,
-        //and leads to the slightly weird phenomenon of 'dangling constructors'. At the moment, there
-        //seems no compelling reason to change this.
-        this.parent = parent;
-        if( parent != null )
-        {
-            parent.insert( name, this );
-        }
+        componentNames = new ArrayList<String>();
     }
-
-
-	private int generateNewUniqueId() {
-		return domains.size() + ID_FUDGE;
-	}
 
 
     public String toString()
     {
-        return "Domain " + getFullName() + " (" + id + ")";
-    }
-
-
-    public String getFullName()
-    {
-        return parent.getFullName() + DOMAIN_DELIMITER + name;
-    }
-
-
-    public CompositeDomain getParent()
-    {
-        return parent;
+        return "Domain " + name + " (" + id + ")";
     }
 
 
@@ -102,6 +76,29 @@ public abstract class Domain
         return id;
     }
 
-    // TODO this method needs Javadoc
-    public abstract void importInto( CompositeDomain parentDomain, String newName );
+    
+    public int getComponentCount()
+    {
+        return componentNames.size();
+    }
+
+    public String getComponentName( int componentNumber )
+    {
+        if( ( componentNumber < 0 ) || ( componentNumber >= componentNames.size() ) )
+        {
+            return null;
+        }
+
+        return componentNames.get( componentNumber );
+    }
+
+
+    // This should not be directly invoked except by descendant classes.
+    int addComponent( String componentName )
+    {
+        //TODO Uniqueness check!
+        componentNames.add( componentName );
+        
+        return componentNames.size();
+    }
 }

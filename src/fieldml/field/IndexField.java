@@ -9,8 +9,8 @@ package fieldml.field;
 public class IndexField
     extends Field
 {
-    public IndexField( CompositeField parent, String name )
+    public IndexField( String name )
     {
-        super( parent, name );
+        super( name );
     }
 }

@@ -5,41 +5,19 @@ import fieldml.domain.*;
 // In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
 public class FieldML
 {
-	private static boolean isValidParent(Domain parent) {
-		return ( parent != null ) && ( parent instanceof CompositeDomain );
-	}
-
-	
-    public static int FieldML_CreateCompositeDomain( int parentId, String name )
+    public static int FieldML_CreateContinuousDomain( String name )
     {
-        Domain parent = Domain.get( parentId );
+        Domain domain = new ContinuousDomain( name );
 
-        if( !isValidParent(parent) )
-        {
-            //ERROR
-        }
-
-        return new CompositeDomain( (CompositeDomain)parent, name ).getId();
+        return domain.getId();
     }
 
 
-    public static int FieldML_CreateContinuousDomain( int parentId, double min, double max )
+    public static int FieldML_CreateDiscreteDomain( String name )
     {
-        //STUB Create an infinite, semi-infinite or finite continuous domain.
-        return 0;
-    }
+        Domain domain = new DiscreteDomain( name );
 
-
-    public static int FieldML_CreateDiscreteDomain( int parentId, String name, int[] values, int startIndex, int count )
-    {
-        Domain parent = Domain.get( parentId );
-
-        if( !isValidParent(parent) )
-        {
-            //ERROR
-        }
-
-        return new DiscreteDomain( (CompositeDomain)parent, name, values, startIndex, count ).getId();
+        return domain.getId();
     }
 
 
@@ -49,25 +27,38 @@ public class FieldML
     }
 
 
-    public static void FieldML_ImportDomain( Integer parentId, int originalDomainId, String newName )
+    public static int FieldML_AddContinuousComponent( int domainId, String componentName, double min, double max )
     {
-        Domain parent = Domain.get( parentId );
+        Domain domain = Domain.get( domainId );
 
-        if( !isValidParent(parent) )
+        if( !( domain instanceof ContinuousDomain ) )
         {
-            //ERROR
-
+            // ERROR
+            return -1;
         }
-        
-        CompositeDomain compositeParent = (CompositeDomain)parent;
-        
-        Domain child = Domain.get( originalDomainId );
-        
-        if( child == null )
+        else
         {
-            //ERROR
+            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
+            
+            return continuousDomain.addComponent( componentName, min, max );
         }
+    }
+    
+    
+    public static int FieldML_AddDiscreteComponent( int domainId, String componentName, int start, int count, int[] values )
+    {
+        Domain domain = Domain.get( domainId );
 
-        child.importInto( compositeParent, newName );
+        if( !( domain instanceof DiscreteDomain ) )
+        {
+            // ERROR
+            return -1;
+        }
+        else
+        {
+            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+            
+            return discreteDomain.addComponent( componentName, start, count, values );
+        }
     }
 }
