@@ -19,9 +19,9 @@ public class ContinuousDomain
     private final double minValue;
     private final double maxValue;
     
-    public ContinuousDomain( CompositeDomain parent, String name, double minValue, double maxValue )
+    public ContinuousDomain( DomainManager manager, CompositeDomain parent, String name, double minValue, double maxValue )
     {
-        super( parent, name );
+        super( manager, parent, name );
         
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -30,7 +30,7 @@ public class ContinuousDomain
     @Override
     public void importInto( CompositeDomain parentDomain, String newName )
     {
-        new ContinuousDomain( parentDomain, newName, minValue, maxValue );
+        new ContinuousDomain( getManager(), parentDomain, newName, minValue, maxValue );
     }
 
 }

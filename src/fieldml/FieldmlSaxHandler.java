@@ -1,10 +1,16 @@
 package fieldml;
 
 import java.io.FileReader;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
+import fieldml.domain.DomainManager;
 
 public class FieldmlSaxHandler
     extends DefaultHandler
@@ -24,8 +30,10 @@ public class FieldmlSaxHandler
     private final Deque<Integer> idStack;
 
     private ParsingState state;
+    
+    private DomainManager manager; 
 
-
+    @Override
     public void startElement( String uri, String localName, String qName, Attributes attributes )
     {
         if( qName.compareTo( "domain" ) == 0 )
@@ -43,11 +51,11 @@ public class FieldmlSaxHandler
 
             if( idStack.size() > 0 )
             {
-                id = FieldML.FieldML_CreateCompositeDomain( idStack.peek(), attributes.getValue( "name" ) );
+                id = FieldML.FieldML_CreateCompositeDomain( manager, idStack.peek(), attributes.getValue( "name" ) );
             }
             else
             {
-                id = FieldML.FieldML_CreateCompositeDomain( 0, attributes.getValue( "name" ) );
+                id = FieldML.FieldML_CreateCompositeDomain( manager, 0, attributes.getValue( "name" ) );
             }
 
             idStack.push( id );
@@ -85,15 +93,16 @@ public class FieldmlSaxHandler
             String newName = attributes.getValue( "id" );
             String originalDomainName = attributes.getValue( "domain" );
 
-            int originalDomainId = FieldML.FieldML_GetDomainId( originalDomainName );
+            int originalDomainId = FieldML.FieldML_GetDomainId( manager, originalDomainName );
             
-            FieldML.FieldML_ImportDomain( idStack.peek(), originalDomainId, newName );
+            FieldML.FieldML_ImportDomain( manager, idStack.peek(), originalDomainId, newName );
         }
 
         characters.setLength( 0 );
     }
 
 
+    @Override
     public void endElement( String uri, String localName, String qName )
     {
         if( qName.compareTo( "domain" ) == 0 )
@@ -107,19 +116,18 @@ public class FieldmlSaxHandler
         }
         else if( qName.compareTo( "discrete_domain" ) == 0 )
         {
-        	// TODO: getValues does not exist yet, so for interim, hard coding return value.
             // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
-            int[] values = {1,2,3};//getValues( characters );
+            int[] values = getValues( characters );
 
-            int id;
+            int id; // TODO: fix warning: what are we meant to do with returned id's?
 
             if( idStack.size() > 0 )
             {
-                id = FieldML.FieldML_CreateDiscreteDomain( idStack.peek(), domainName, values, 0, values.length );
+                id = FieldML.FieldML_CreateDiscreteDomain( manager, idStack.peek(), domainName, values, 0, values.length );
             }
             else
             {
-                id = FieldML.FieldML_CreateDiscreteDomain( 0, domainName, values, 0, values.length );
+                id = FieldML.FieldML_CreateDiscreteDomain( manager, 0, domainName, values, 0, values.length );
             }
 
             characters.setLength( 0 );
@@ -136,17 +144,23 @@ public class FieldmlSaxHandler
     }
 
 
-    public void characters( char[] ch, int start, int length )
+    private int[] getValues(StringBuilder characters) {
+    	// TODO: This is a terribly lazy hack because this method has not been coded yet, so for interim, hard coding return value.
+		return new int[]{1,2,3};
+	}
+
+
+	public void characters( char[] ch, int start, int length )
     {
         characters.append( String.copyValueOf( ch, start, length ) );
     }
 
 
-    private FieldmlSaxHandler()
+    private FieldmlSaxHandler(DomainManager manager)
     {
         characters = new StringBuilder();
-
         idStack = new ArrayDeque<Integer>();
+        this.manager = manager;
     }
 
 
@@ -154,8 +168,9 @@ public class FieldmlSaxHandler
     {
         try
         {
+        	DomainManager manager = new DomainManager();
             XMLReader xr = XMLReaderFactory.createXMLReader();
-            FieldmlSaxHandler handler = new FieldmlSaxHandler();
+            FieldmlSaxHandler handler = new FieldmlSaxHandler(manager);
             xr.setContentHandler( handler );
             xr.setErrorHandler( handler );
 
