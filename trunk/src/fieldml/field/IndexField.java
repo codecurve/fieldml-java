@@ -1,5 +1,6 @@
 package fieldml.field;
 
+import fieldml.domain.DiscreteDomain;
 import fieldml.util.FieldmlObjectManager;
 
 /**
@@ -11,8 +12,12 @@ import fieldml.util.FieldmlObjectManager;
 public class IndexField
     extends Field
 {
-    public IndexField( FieldmlObjectManager<Field> manager, String name )
+    private final DiscreteDomain valueDomain; 
+    
+    public IndexField( FieldmlObjectManager<Field> manager, DiscreteDomain valueDomain, String name )
     {
         super( manager, name );
+        
+        this.valueDomain = valueDomain;
     }
 }
