@@ -1,6 +1,5 @@
 package fieldml.field;
 
-import fieldml.domain.Domain;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 
