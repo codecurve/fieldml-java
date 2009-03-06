@@ -40,4 +40,14 @@ public class ContinuousDomain
         
         return componentExtrema.size();
     }
+    
+    
+    public int importComponent( String newComponentName, ContinuousDomain domain, int componentId )
+    {
+        super.addComponent( newComponentName );
+        
+        componentExtrema.add( domain.componentExtrema.get( componentId ) );
+        
+        return componentExtrema.size();
+    }
 }
