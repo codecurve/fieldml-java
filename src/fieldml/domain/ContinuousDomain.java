@@ -3,6 +3,8 @@ package fieldml.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import fieldml.util.FieldmlObjectManager;
+
 /**
  * Continuous domains represent a real-valued domain with a lower bound, upper and lower bounds, or completely unbounded. Unlike
  * discrete domains, it is not possible to obtain a 'complete set' of values for a continuous domain. However, the client may
@@ -20,7 +22,7 @@ public class ContinuousDomain
     private List<double[]> componentExtrema = new ArrayList<double[]>();
 
 
-    public ContinuousDomain( DomainManager manager, String name )
+    public ContinuousDomain( FieldmlObjectManager<Domain> manager, String name )
     {
         super( manager, name );
     }

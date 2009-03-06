@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import fieldml.util.FieldmlObjectManager;
+
 public class DiscreteDomain
     extends Domain
 {
     private final List<int[]> componentValues = new ArrayList<int[]>();
 
 
-    public DiscreteDomain( DomainManager manager, String name )
+    public DiscreteDomain( FieldmlObjectManager<Domain> manager, String name )
     {
         super( manager, name );
 

@@ -1,5 +1,7 @@
 package fieldml.field;
 
+import fieldml.util.FieldmlObjectManager;
+
 /**
  * IndexField defines a non-composite index-valued field. Index-valued fields are separate from integer/real valued
  * fields, as few (if any) mathematical operations on them make sense. It would also be incorrent to interpret such fields
@@ -9,7 +11,7 @@ package fieldml.field;
 public class IndexField
     extends Field
 {
-    public IndexField( FieldManager manager, String name )
+    public IndexField( FieldmlObjectManager<Field> manager, String name )
     {
         super( manager, name );
     }

@@ -3,7 +3,11 @@ package fieldml.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import fieldml.util.FieldmlObject;
+import fieldml.util.FieldmlObjectManager;
+
 public abstract class Domain
+    implements FieldmlObject
 {
     /**
      * A globally unique integer identifying the domain, useful for internal (inter-process) and external (client-server)
@@ -20,9 +24,9 @@ public abstract class Domain
 
     private final List<String> componentNames = new ArrayList<String>();
     
-    private final DomainManager manager;
+    private final FieldmlObjectManager<Domain> manager;
 
-    public Domain( DomainManager manager, String name )
+    public Domain( FieldmlObjectManager<Domain> manager, String name )
     {
         this.name = name;
         this.manager = manager;

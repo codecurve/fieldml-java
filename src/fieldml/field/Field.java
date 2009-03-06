@@ -1,7 +1,12 @@
 package fieldml.field;
 
+import fieldml.domain.Domain;
+import fieldml.util.FieldmlObject;
+import fieldml.util.FieldmlObjectManager;
+
 
 public abstract class Field
+    implements FieldmlObject
 {
 
     /**
@@ -18,7 +23,7 @@ public abstract class Field
     private final String name;
 
 
-    public Field( FieldManager manager, String name )
+    public Field( FieldmlObjectManager<Field> manager, String name )
     {
         this.name = name;
 
