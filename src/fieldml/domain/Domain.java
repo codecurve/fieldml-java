@@ -23,8 +23,9 @@ public abstract class Domain
     private final String name;
 
     private final List<String> componentNames = new ArrayList<String>();
-    
+
     private final FieldmlObjectManager<Domain> manager;
+
 
     public Domain( FieldmlObjectManager<Domain> manager, String name )
     {
@@ -78,5 +79,11 @@ public abstract class Domain
         componentNames.add( componentName );
 
         return componentNames.size();
+    }
+
+
+    public int getComponentId( String componentName )
+    {
+        return componentNames.indexOf( componentName );
     }
 }
