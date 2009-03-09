@@ -37,199 +37,245 @@
     <component id="n" />
   </continuous_domain>
 
-  <continuous_domain id="element.bilinear_interpolation_parameters" value="real" >
-    <component id="xi_node1" />
-    <component id="xi_node2" />
-    <component id="xi_node3" />
-    <component id="xi_node4" />
+  <continuous_domain id="library::bilinear_interpolation_parameters" value="real" >
+    <component id="node1" />
+    <component id="node2" />
+    <component id="node3" />
+    <component id="node4" />
   </continuous_domain>
 
   <discrete_domain id="mesh.element_nodes" value="index">
-    <import_component id="node1" domain="mesh.node" component="id"/>
-    <import_component id="node2" domain="mesh.node" component="id"/>
-    <import_component id="node3" domain="mesh.node" component="id"/>
-    <import_component id="node4" domain="mesh.node" component="id"/>
+    <import_component id="node1" domain="mesh.node" component="id" />
+    <import_component id="node2" domain="mesh.node" component="id" />
+    <import_component id="node3" domain="mesh.node" component="id" />
+    <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
 
-  <field id="element.nodes" domain="mesh.element" value="mesh.element_nodes">
-    <value_map domain="mesh.element" component="id" value="3">
+  <field id="element.nodes" value_domain="mesh.element_nodes">
+    <parameter_domain domain="mesh.element" />
+    
+    <value_map domain_number="1" component="id" value="3">
       <assign>
         3  4  8  9
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="4">
+    <value_map domain_number="1" component="id" value="4">
       <assign>
         4  5  9  10
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="7">
+    <value_map domain_number="1" component="id" value="7">
       <assign>
         8  9  13  14
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="8">
+    <value_map domain_number="1" component="id" value="8">
       <assign>
         9  10  14  15
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="11">
+    <value_map domain_number="1" component="id" value="11">
       <assign>
         13  14  18  19
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="12">
+    <value_map domain_number="1" component="id" value="12">
       <assign>
         14  15  19  20
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="15">
+    <value_map domain_number="1" component="id" value="15">
       <assign>
         18  19  23  24
       </assign>
     </value_map>
-    <value_map domain="mesh.element" component="id" value="16">
+    <value_map domain_number="1" component="id" value="16">
       <assign>
         19  20  24  25
       </assign>
     </value_map>
   </field>
 
-  <field id="element.y_values" domain="mesh.element" value="element.bilinear_interpolation_parameters">
-    <import_component id="xi_node1" field="node.parameters.y">
-      <field_parameter id="node_id" field="element.nodes.node1">
-        <domain_parameter domain_number="1"/>
-      </field_parameter>
-    </import_component>
-    <import_component id="xi_node2" field="node.parameters.y">
-      <field_parameter id="node_id" field="element.nodes.node2">
-        <domain_parameter domain_number="1"/>
-      </field_parameter>
-    </import_component>
-    <import_component id="xi_node3" field="node.parameters.y">
-      <field_parameter id="node_id" field="element.nodes.node3">
-        <domain_parameter domain_number="1"/>
-      </field_parameter>
-    </import_component>
-    <import_component id="xi_node4" field="node.parameters.y">
-      <field_parameter id="node_id" field="element.nodes.node4">
-        <domain_parameter domain_number="1"/>
-      </field_parameter>
-    </import_component>
-  </field>
-
-  <field id="mesh.coordinates" domain="mesh.element,library::unit_square" value="library::2d_cartesian" >
-    <evaluate_component id="x" value="real">
-      <dot_product>
-        <field id="library::bilinear_lagrange">
-          <domain_parameter domain_number="2"/>
-        </field>
-        <!--
-          An anonymous inner field isn't visible to the client, and must be defined over some combination of its
-          parent's domains.
-         -->
-        <anonymous_field domain_number="1" value="element.bilinear_interpolation_parameters">
-          <import_component id="xi_node1" field="node.parameters.x">
-            <field_parameter id="node_id" field="element.nodes.node1">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node2" field="node.parameters.x">
-            <field_parameter id="node_id" field="element.nodes.node2">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node3" field="node.parameters.x">
-            <field_parameter id="node_id" field="element.nodes.node3">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node4" field="node.parameters.x">
-            <field_parameter id="node_id" field="element.nodes.node4">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-        </anonymous_field>
-      </dot_product>
+  <field id="library::bilinear_lagrange" value_domain="library::bilinear_interpolation_parameters">
+    <parameter_domain id="library::cartesian_2d" />
+    
+    <evaluate_component id="node1">
+      <multiply>
+        <subtract>
+          <constant_value value="1" />
+          <domain_value domain_number="1" component="x" />
+        </subtract>
+        <subtract>
+          <constant_value value="1" />
+          <domain_value domain_number="1" component="y" />
+        </subtract>
+      </multiply>
     </evaluate_component>
 
-    <evaluate_component id="y" value="real">
-      <dot_product>
-        <field id="library::bilinear_lagrange">
-          <domain_parameter id="xi" source_id="xi"/>
-        </field>
-        <field id="element_y">
-          <domain_parameter id="element.element_id"/>
-        </field>
-      </dot_product>
+    <evaluate_component id="node2">
+      <multiply>
+        <domain_value domain_number="1" component="x" />
+        <subtract>
+          <constant_value value="1" />
+          <domain_value domain_number="1" component="y" />
+        </subtract>
+      </multiply>
     </evaluate_component>
 
-  </field>
+    <evaluate_component id="node3">
+      <multiply>
+        <subtract>
+          <constant_value value="1" />
+          <domain_value domain_number="1" component="x" />
+        </subtract>
+        <domain_value domain_number="1" component="y" />
+      </multiply>
+    </evaluate_component>
 
-  <field id="mesh.g" domain="mesh.element,library::unit_square" value="library::infinite_line">
-    <evaluate_component id="value" value="real">
+    <evaluate_component id="node4">
+      <multiply>
+        <domain_value domain_number="1" component="x" />
+        <domain_value domain_number="1" component="y" />
+      </multiply>
+    </evaluate_component>
+  </field>
+  
+  <field id="library::bilinear_interpolation" value_domain="library::infinite_line">
+    <parameter_domain domain="library::bilinear_interpolation_parameters" />
+    <parameter_map mapping_field="library::bilinear_lagrange">
+      <parameter_domain domain="library::cartesian_2d" />
+    </parameter_map>
+    
+    <evaluate_component id="value">
       <dot_product>
-        <field id="library::bilinear_lagrange">
-          <domain_parameter id="xi" source_id="xi"/>
-        </field>
-        <anonymous_field domain_number="1" value="element.bilinear_interpolation_parameters">
-          <import_component id="xi_node1" field="node.parameters.g">
-            <field_parameter id="node_id" field="element.nodes.node1">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node2" field="node.parameters.g">
-            <field_parameter id="node_id" field="element.nodes.node2">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node3" field="node.parameters.g">
-            <field_parameter id="node_id" field="element.nodes.node3">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node4" field="node.parameters.g">
-            <field_parameter id="node_id" field="element.nodes.node4">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-        </anonymous_field>
+        <domain_vector domain_number="1" />
+        <domain_vector domain_number="2" />
       </dot_product>
     </evaluate_component>
   </field>
 
-  <field id="mesh.n" domain="mesh.element,library::unit_square" value="library::infinite_line">
-    <evaluate_component id="n" value="real">
-      <dot_product>
-        <field id="library::bilinear_lagrange">
-          <domain_parameter id="xi" source_id="xi"/>
-        </field>
-        <anonymous_field domain_number="1" value="element.bilinear_interpolation_parameters">
-          <import_component id="xi_node1" field="node.parameters.n">
-            <field_parameter id="node_id" field="element.nodes.node1">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node2" field="node.parameters.n">
-            <field_parameter id="node_id" field="element.nodes.node2">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node3" field="node.parameters.n">
-            <field_parameter id="node_id" field="element.nodes.node3">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-          <import_component id="xi_node4" field="node.parameters.n">
-            <field_parameter id="node_id" field="element.nodes.node4">
-                <domain_parameter domain_number="1"/>
-            </field_parameter>
-          </import_component>
-        </anonymous_field>
-      </dot_product>
-    </evaluate_component>
+  <field id="element.x_values" value_domain="library::bilinear_interpolation_parameters">
+    <parameter_map mapping_field="element.nodes">
+      <parameter_domain domain="mesh.element" />
+    </parameter_map>
+    
+    <import_component field="node.parameters" component="x" >
+      <domain_parameter domain_number="1" component="node1" />
+    </import_component>
+    <import_component field="node.parameters" component="x" >
+      <domain_parameter domain_number="1" component="node2" />
+    </import_component>
+    <import_component field="node.parameters" component="x" >
+      <domain_parameter domain_number="1" component="node3" />
+    </import_component>
+    <import_component field="node.parameters" component="x" >
+      <domain_parameter domain_number="1" component="node4" />
+    </import_component>
   </field>
 
-  <field id="node.parameters" domain="mesh.node" value="node.parameters">
+  <field id="element.y_values" value_domain="library::bilinear_interpolation_parameters">
+    <parameter_map mapping_field="element.nodes">
+      <parameter_domain domain="mesh.element" />
+    </parameter_map>
+    
+    <import_component field="node.parameters" component="y" >
+      <domain_parameter domain_number="1" component="node1" />
+    </import_component>
+    <import_component field="node.parameters" component="y" >
+      <domain_parameter domain_number="1" component="node2" />
+    </import_component>
+    <import_component field="node.parameters" component="y" >
+      <domain_parameter domain_number="1" component="node3" />
+    </import_component>
+    <import_component field="node.parameters" component="y" >
+      <domain_parameter domain_number="1" component="node4" />
+    </import_component>
+  </field>
+
+  <field id="element.g_values" value_domain="library::bilinear_interpolation_parameters">
+    <parameter_map mapping_field="element.nodes">
+      <parameter_domain domain="mesh.element" />
+    </parameter_map>
+    
+    <import_component field="node.parameters" component="g" >
+      <domain_parameter domain_number="1" component="node1" />
+    </import_component>
+    <import_component field="node.parameters" component="g" >
+      <domain_parameter domain_number="1" component="node2" />
+    </import_component>
+    <import_component field="node.parameters" component="g" >
+      <domain_parameter domain_number="1" component="node3" />
+    </import_component>
+    <import_component field="node.parameters" component="g" >
+      <domain_parameter domain_number="1" component="node4" />
+    </import_component>
+  </field>
+
+  <field id="element.n_values" value_domain="library::bilinear_interpolation_parameters">
+    <parameter_map mapping_field="element.nodes">
+      <parameter_domain domain="mesh.element" />
+    </parameter_map>
+    
+    <import_component field="node.parameters" component="n" >
+      <domain_parameter domain_number="1" component="node1" />
+    </import_component>
+    <import_component field="node.parameters" component="n" >
+      <domain_parameter domain_number="1" component="node2" />
+    </import_component>
+    <import_component field="node.parameters" component="n" >
+      <domain_parameter domain_number="1" component="node3" />
+    </import_component>
+    <import_component field="node.parameters" component="n" >
+      <domain_parameter domain_number="1" component="node4" />
+    </import_component>
+  </field>
+
+  <field id="mesh.coordinates" value_domain="library::cartesian_2d">
+    <parameter_domain domain="mesh.element" />
+    <parameter_domain domain="library::unit_square" />
+
+    <import_component id="x" field="library::bilinear_interpolation" component="value">
+      <field_parameter id="element.x_values">
+        <domain_parameter domain_number="1"/>
+      </field_parameter>
+      <domain_parameter domain_number="2" />
+    </import_component>
+
+    <import_component id="y" field="library::bilinear_interpolation" component="value">
+      <field_parameter id="element.y_values">
+        <domain_parameter domain_number="1"/>
+      </field_parameter>
+      <domain_parameter domain_number="2" />
+    </import_component>
+  </field>
+
+  <field id="mesh.g" value_domain="library::infinite_line">
+    <parameter_domain domain="mesh.element" />
+    <parameter_domain domain="library::unit_square" />
+
+    <import_component id="value" field="library::bilinear_interpolation" component="value">
+      <field_parameter id="element.g_values">
+        <domain_parameter domain_number="1"/>
+      </field_parameter>
+      <domain_parameter domain_number="2" />
+    </import_component>
+  </field>
+
+  <field id="mesh.n" value_domain="library::infinite_line">
+    <parameter_domain domain="mesh.element" />
+    <parameter_domain domain="library::unit_square" />
+
+    <import_component id="value" field="library::bilinear_interpolation" component="value">
+      <field_parameter id="element.n_values">
+        <domain_parameter domain_number="1"/>
+      </field_parameter>
+      <domain_parameter domain_number="2" />
+    </import_component>
+  </field>
+
+  <field id="node.parameters" value_domain="node.parameters">
+    <parameter_domain domain="mesh.node" />
+
     <value_map domain="mesh.node" component="id" parameter="3">
       <assign>
         1.0000000000000000E+00   0.0000000000000000E+00   3.1972356254077172E+00  -5.3524942944527254E-07
