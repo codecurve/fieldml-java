@@ -3,6 +3,7 @@
     Produced by OpenCMISS, using the LaplaceExample project with a 4x4x0 mesh computed by 2 nodes. This file
     represents the first node's output.
    -->
+
   <discrete_domain id="mesh.element" value="index">
     <component id="id">
       3  4  7  8  11  12  15  16
@@ -28,51 +29,6 @@
     <import_component id="node3" domain="mesh.node" component="id" />
     <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
-
-  <field id="element.nodes" value_domain="mesh.element_nodes">
-    <parameter_domain domain="mesh.element" />
-    
-    <value_map domain_number="1" component="id" value="3">
-      <assign>
-        3  4  8  9
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="4">
-      <assign>
-        4  5  9  10
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="7">
-      <assign>
-        8  9  13  14
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="8">
-      <assign>
-        9  10  14  15
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="11">
-      <assign>
-        13  14  18  19
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="12">
-      <assign>
-        14  15  19  20
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="15">
-      <assign>
-        18  19  23  24
-      </assign>
-    </value_map>
-    <value_map domain_number="1" component="id" value="16">
-      <assign>
-        19  20  24  25
-      </assign>
-    </value_map>
-  </field>
 
   <field id="element.x_values" value_domain="library::bilinear_interpolation_parameters">
     <parameter_map mapping_field="element.nodes">
@@ -194,7 +150,7 @@
   </field>
 
   <field id="node.parameters" value_domain="node.parameters">
-    <parameter_domain domain="mesh.node" />
+    <parameter_domain domain="mesh.node" index_domain="true" />
 
     <value_map domain="mesh.node" component="id" parameter="3">
       <assign>
@@ -257,4 +213,42 @@
       </assign>
     </value_map>
   </field>
+
+
+  <!--
+    It seems that fields defined over a discrete domain only need to be defined over a single
+    domain, which in turn has a single component. While this prohibits 'nesting' value
+    requirements (i.e. forcing the field to be a single-parameter field), it simplifies the
+    associated API greatly. For a start, it allows the api to infer "domain 1, component 1"
+    for assigning values.   
+   -->
+  <field id="element.nodes" value_domain="mesh.element_nodes">
+    <parameter_domain domain="mesh.element" index_domain="true"/>
+    
+    <value_map value="3">
+        3  4  8  9
+    </value_map>
+    <value_map value="4">
+        4  5  9  10
+    </value_map>
+    <value_map value="7">
+        8  9  13  14
+    </value_map>
+    <value_map value="8">
+        9  10  14  15
+    </value_map>
+    <value_map value="11">
+        13  14  18  19
+    </value_map>
+    <value_map value="12">
+        14  15  19  20
+    </value_map>
+    <value_map value="15">
+        18  19  23  24
+    </value_map>
+    <value_map value="16">
+        19  20  24  25
+    </value_map>
+  </field>
+
 </fieldml>
