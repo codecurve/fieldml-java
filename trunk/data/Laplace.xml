@@ -3,21 +3,6 @@
     Produced by OpenCMISS, using the LaplaceExample project with a 4x4x0 mesh computed by 2 nodes. This file
     represents the first node's output.
    -->
-
-  <continuous_domain id="library::unit_square" value="real" >
-    <component id="x" min="0" max="1" />
-    <component id="y" min="0" max="1" />
-  </continuous_domain>
-  
-  <continuous_domain id="library::2d_cartesian" value="real" >
-    <component id="x" />
-    <component id="y" />
-  </continuous_domain>
-  
-  <continuous_domain id="library::infinite_line" value="real" >
-    <component id="value" />
-  </continuous_domain>
-  
   <discrete_domain id="mesh.element" value="index">
     <component id="id">
       3  4  7  8  11  12  15  16
@@ -35,13 +20,6 @@
     <component id="y" />
     <component id="g" />
     <component id="n" />
-  </continuous_domain>
-
-  <continuous_domain id="library::bilinear_interpolation_parameters" value="real" >
-    <component id="node1" />
-    <component id="node2" />
-    <component id="node3" />
-    <component id="node4" />
   </continuous_domain>
 
   <discrete_domain id="mesh.element_nodes" value="index">
@@ -94,64 +72,6 @@
         19  20  24  25
       </assign>
     </value_map>
-  </field>
-
-  <field id="library::bilinear_lagrange" value_domain="library::bilinear_interpolation_parameters">
-    <parameter_domain id="library::cartesian_2d" />
-    
-    <evaluate_component id="node1">
-      <multiply>
-        <subtract>
-          <constant_value value="1" />
-          <domain_value domain_number="1" component="x" />
-        </subtract>
-        <subtract>
-          <constant_value value="1" />
-          <domain_value domain_number="1" component="y" />
-        </subtract>
-      </multiply>
-    </evaluate_component>
-
-    <evaluate_component id="node2">
-      <multiply>
-        <domain_value domain_number="1" component="x" />
-        <subtract>
-          <constant_value value="1" />
-          <domain_value domain_number="1" component="y" />
-        </subtract>
-      </multiply>
-    </evaluate_component>
-
-    <evaluate_component id="node3">
-      <multiply>
-        <subtract>
-          <constant_value value="1" />
-          <domain_value domain_number="1" component="x" />
-        </subtract>
-        <domain_value domain_number="1" component="y" />
-      </multiply>
-    </evaluate_component>
-
-    <evaluate_component id="node4">
-      <multiply>
-        <domain_value domain_number="1" component="x" />
-        <domain_value domain_number="1" component="y" />
-      </multiply>
-    </evaluate_component>
-  </field>
-  
-  <field id="library::bilinear_interpolation" value_domain="library::infinite_line">
-    <parameter_domain domain="library::bilinear_interpolation_parameters" />
-    <parameter_map mapping_field="library::bilinear_lagrange">
-      <parameter_domain domain="library::cartesian_2d" />
-    </parameter_map>
-    
-    <evaluate_component id="value">
-      <dot_product>
-        <domain_vector domain_number="1" />
-        <domain_vector domain_number="2" />
-      </dot_product>
-    </evaluate_component>
   </field>
 
   <field id="element.x_values" value_domain="library::bilinear_interpolation_parameters">
