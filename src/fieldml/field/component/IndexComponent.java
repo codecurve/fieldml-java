@@ -2,8 +2,8 @@ package fieldml.field.component;
 
 import fieldml.field.FieldParameters;
 
-public abstract class RealComponent
+public abstract class IndexComponent
     extends Component
 {
-    public abstract double evaluate( FieldParameters parameters );
+    public abstract int evaluate( FieldParameters parameters );
 }

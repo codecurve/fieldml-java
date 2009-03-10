@@ -1,16 +1,10 @@
 package fieldml.field;
 
-import java.util.ArrayList;
-
 import fieldml.domain.ContinuousDomain;
 import fieldml.field.component.RealComponent;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.RealValue;
-import fieldml.value.Value;
 
-/**
- * RealField defines a non-composite real-valued field.
- */
 public class RealField
     extends Field
 {
@@ -27,17 +21,25 @@ public class RealField
 
         components = new RealComponent[valueDomain.getComponentCount()];
     }
-    
-    
+
+
     public void importComponent( String componentName, RealField field, int componentId )
     {
         int id = valueDomain.getComponentId( componentName );
-        
+
         components[id] = field.components[componentId];
     }
 
 
-    public void evaluate( ArrayList<Value> parameters, RealValue value )
+    // Specifying an arbitrarily nested composition of binary operators on domain, constant and/or
+    // imported arguments seems non-trivial. Perhaps passing an array of argument specifiers, and
+    // an array of operator specifiers, and applying an RPN-style evaluation algorithm might work.
+    public void evaluateComponent( String componentName )
+    {
+    }
+
+
+    public void evaluate( FieldParameters parameters, RealValue value )
     {
         // Auditting parameter and value correctness can be done when parsing input or processing
         // FieldML API calls, and therefore need not be done here.
@@ -45,5 +47,12 @@ public class RealField
         {
             value.values[i] = components[i].evaluate( parameters );
         }
+    }
+
+
+    @Override
+    public int getComponentCount()
+    {
+        return valueDomain.getComponentCount();
     }
 }
