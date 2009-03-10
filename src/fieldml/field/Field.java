@@ -1,11 +1,18 @@
 package fieldml.field;
 
+import java.util.ArrayList;
+
+import fieldml.domain.DiscreteDomain;
+import fieldml.domain.Domain;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 
 public abstract class Field
     implements FieldmlObject
 {
+    DiscreteDomain indexDomain;
+    
+    final ArrayList<Domain> parameterDomains;
 
     /**
      * A globally unique integer identifying the field, useful for internal (inter-process) and external (client-server)
@@ -25,8 +32,9 @@ public abstract class Field
     {
         this.name = name;
 
-        id = manager.add( this );
+        parameterDomains = new ArrayList<Domain>();
 
+        id = manager.add( this );
     }
 
 
@@ -46,5 +54,31 @@ public abstract class Field
     public String getName()
     {
         return name;
+    }
+
+
+    public int addParameterDomain( Domain domain, boolean isIndexDomain )
+    {
+        if( isIndexDomain )
+        {
+            if( indexDomain != null )
+            {
+                //ERROR only one index domain is allowed
+                return -1;
+            }
+            
+            if( ! (domain instanceof DiscreteDomain ) )
+            {
+                //ERROR index domains must be discrete
+                return -1;
+            }
+            
+            indexDomain = (DiscreteDomain)domain;
+        }
+
+        parameterDomains.add( domain );
+        
+        
+        return 0;
     }
 }

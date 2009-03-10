@@ -35,13 +35,33 @@ public class IndexField
     }
 
 
-    public void assignValues( int indexValue, int[] assignedValues )
+    public int assignValues( int indexValue, int[] assignedValues )
     {
+        if( indexDomain == null )
+        {
+            //ERROR field must have an index domain
+            return -1;
+        }
+        
+        if( assignedValues.length != getComponentCount() )
+        {
+            //ERROR
+            return -1;
+        }
+        
+        if( values.get( indexValue ) != null )
+        {
+            // ERROR already assigned
+            return -1;
+        }
+
         values.put( indexValue, Arrays.copyOf( assignedValues, assignedValues.length ) );
+
+        return 0;
     }
 
 
-    public void evaluate( FieldParameters parameters, RealValue value )
+    public int evaluate( FieldParameters parameters, RealValue value )
     {
         int[] localValues = values.get( parameters.indexValues.get( 0 ).values[0] );
 
@@ -49,6 +69,8 @@ public class IndexField
         {
             value.values[i] = localValues[i];
         }
+
+        return 0;
     }
 
 
