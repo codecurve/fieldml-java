@@ -3,7 +3,6 @@ package fieldml.field;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 
-
 public abstract class Field
     implements FieldmlObject
 {
@@ -26,7 +25,7 @@ public abstract class Field
     {
         this.name = name;
 
-        id = manager.add(this);
+        id = manager.add( this );
 
     }
 
@@ -44,7 +43,8 @@ public abstract class Field
     }
 
 
-	public String getName() {
-		return name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 }

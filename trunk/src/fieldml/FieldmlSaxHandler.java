@@ -92,7 +92,7 @@ public class FieldmlSaxHandler
                     max = Double.parseDouble( attributes.getValue( "max" ) );
                 }
 
-                FieldML.FieldML_AddContinuousComponent( currentId, attributes.getValue( "id" ), min, max );
+                FieldML.FieldML_AddContinuousDomainComponent( currentId, attributes.getValue( "id" ), min, max );
             }
         }
         else if( state == ParsingState.DISCRETE_DOMAIN )
@@ -138,7 +138,7 @@ public class FieldmlSaxHandler
                 // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
                 int[] values = getValues( characters.toString() );
                 
-                FieldML.FieldML_AddDiscreteComponent( currentId, currentName, 0, values.length, values ); 
+                FieldML.FieldML_AddDiscreteDomainComponent( currentId, currentName, 0, values.length, values ); 
             }
         }
     }
