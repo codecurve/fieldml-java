@@ -109,7 +109,7 @@ public class FieldML
     }
     
     
-    public static int FieldML_AssignComponentValues( int fieldId, int parameterValue, int[] componentValues )
+    public static int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues )
     {
         Field field = fieldManager.get( fieldId );
         
@@ -119,16 +119,44 @@ public class FieldML
             return -1;
         }
         
-        if( componentValues.length != field.getComponentCount() )
+        IndexField indexField = (IndexField)field;
+        
+        return indexField.assignValues( parameterValue, componentValues );
+    }
+    
+    
+    public static int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues )
+    {
+        Field field = fieldManager.get( fieldId );
+        
+        if( ! ( field instanceof RealField ) )
         {
             //ERROR
             return -1;
         }
         
-        IndexField indexField = (IndexField)field;
+        RealField indexField = (RealField)field;
         
-        indexField.assignValues( parameterValue, componentValues );
+        return indexField.assignValues( parameterValue, componentValues );
+    }
+    
+    
+    public static int FieldML_AddIndexParameter( int fieldId, int domainId )
+    {
+        Field field = fieldManager.get( fieldId );
         
-        return 0;
+        Domain domain = domainManager.get( domainId );
+        
+        return field.addParameterDomain( domain, true );
+    }
+    
+    
+    public static int FieldML_AddParameter( int fieldId, int domainId )
+    {
+        Field field = fieldManager.get( fieldId );
+        
+        Domain domain = domainManager.get( domainId );
+        
+        return field.addParameterDomain( domain, false );
     }
 }

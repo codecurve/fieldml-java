@@ -55,4 +55,22 @@ public class RealField
     {
         return valueDomain.getComponentCount();
     }
+
+
+    public int assignValues( int parameterValue, double[] componentValues )
+    {
+        if( indexDomain == null )
+        {
+            //ERROR field must have an index domain
+            return -1;
+        }
+        
+        if( componentValues.length != getComponentCount() )
+        {
+            //ERROR
+            return -1;
+        }
+        
+        return 0;
+    }
 }
