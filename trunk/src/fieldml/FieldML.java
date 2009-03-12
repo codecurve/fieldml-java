@@ -1,162 +1,54 @@
 package fieldml;
 
-import fieldml.domain.ContinuousDomain;
-import fieldml.domain.DiscreteDomain;
-import fieldml.domain.Domain;
-import fieldml.field.Field;
-import fieldml.field.IndexField;
-import fieldml.field.RealField;
-import fieldml.util.FieldmlObjectManager;
 
 /**
  * In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
  * Because the API is to be called from Fortran as well, only primitive types can be used as parameters.
  * 
  */
-public class FieldML
+public interface FieldML
 {
-    private static final FieldmlObjectManager<Domain> domainManager;
-    private static final FieldmlObjectManager<Field> fieldManager;
+    //Domain methods
+    public int FieldML_CreateContinuousDomain( String name );
+
+    public int FieldML_CreateDiscreteDomain( String name );
+
+    public int FieldML_GetDomainId( String originalDomainName );
+
+    public int FieldML_AddContinuousDomainComponent( int domainId, String componentName, double min, double max );
+
+    public int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int start, int count, int[] values );
     
-    static
-    {
-        domainManager = new FieldmlObjectManager<Domain>();
-        fieldManager = new FieldmlObjectManager<Field>();
-    }
+    //Field methods
+    public int FieldML_CreateField( String name, int valueDomainId );
     
-    public static int FieldML_CreateContinuousDomain( String name )
-    {
-        Domain domain = new ContinuousDomain( domainManager, name );
-
-        return domain.getId();
-    }
-
-
-    public static int FieldML_CreateDiscreteDomain( String name )
-    {
-        Domain domain = new DiscreteDomain( domainManager, name );
-
-        return domain.getId();
-    }
-
-
-    public static int FieldML_GetDomainId( String originalDomainName )
-    {
-        return domainManager.getId( originalDomainName );
-    }
-
-
-    public static int FieldML_AddContinuousDomainComponent( int domainId, String componentName, double min, double max )
-    {
-        Domain domain = domainManager.get( domainId );
-
-        if( !( domain instanceof ContinuousDomain ) )
-        {
-            // ERROR
-            return -1;
-        }
-        else
-        {
-            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-
-            return continuousDomain.addComponent( componentName, min, max );
-        }
-    }
-
-
-    public static int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int start, int count, int[] values )
-    {
-        Domain domain = domainManager.get( domainId );
-
-        if( !( domain instanceof DiscreteDomain ) )
-        {
-            // ERROR
-            return -1;
-        }
-        else
-        {
-            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
-
-            return discreteDomain.addComponent( componentName, start, count, values );
-        }
-    }
+    public int FieldML_GetFieldParameterCount( int fieldId );
     
+    public int FieldML_GetFieldParameterDomainIds( int fieldId, int[] domainIds );
     
-    public static int FieldML_CreateField( String name, int valueDomainId )
-    {
-        Domain domain = domainManager.get( valueDomainId );
-        
-        if( domain instanceof DiscreteDomain )
-        {
-            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
-            
-            Field field = new IndexField( fieldManager, discreteDomain, name );
+    public int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues );
+    
+    public int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues );
+    
+    public int FieldML_AddInputParameter( int fieldId, int domainId, boolean isIndexParameter );
+    
+    // Although the code only allows single-parameter mapping fields (i.e. domain -> domain), representing
+    // the idea of changing a parameter's domain, it could be changed to allow multi-domain -> domain fields.
+    // However, this would mean that a single mapped_parameter tag could induce any number of actual parameters,
+    // as the mapping field itself could use a mapped_parameter, and so on.
+    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes, boolean isIndexParameter );
+    
+    //Cache methods. These could be extended to permit multi-member caches.
+    public int FieldML_CreateCache( int[] domainIds, int parameterCount );
 
-            return field.getId();
-            
-        }
-        else if( domain instanceof ContinuousDomain )
-        {
-            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-            
-            Field field = new RealField( fieldManager, continuousDomain, name );
-
-            return field.getId();
-        }
-        
-        //ERROR
-        return -1;
-    }
+    public int FieldML_DestroyCache( int cacheId );
     
+    public int FieldML_SetContinousCacheValues( int cacheId, int domainNumber, double[] values );
     
-    public static int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues )
-    {
-        Field field = fieldManager.get( fieldId );
-        
-        if( ! ( field instanceof IndexField ) )
-        {
-            //ERROR
-            return -1;
-        }
-        
-        IndexField indexField = (IndexField)field;
-        
-        return indexField.assignValues( parameterValue, componentValues );
-    }
+    public int FieldML_SetDiscreteCacheValues( int cacheId, int domainNumber, int[] values ); 
     
+    //Field-evaluation methods
+    public int FieldML_EvaluateDiscreteField( int fieldId, int cacheId, int[] values );
     
-    public static int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues )
-    {
-        Field field = fieldManager.get( fieldId );
-        
-        if( ! ( field instanceof RealField ) )
-        {
-            //ERROR
-            return -1;
-        }
-        
-        RealField indexField = (RealField)field;
-        
-        return indexField.assignValues( parameterValue, componentValues );
-    }
-    
-    
-    public static int FieldML_AddIndexParameter( int fieldId, int domainId )
-    {
-        Field field = fieldManager.get( fieldId );
-        
-        Domain domain = domainManager.get( domainId );
-        
-        return field.addParameterDomain( domain, true );
-    }
-    
-    
-    public static int FieldML_AddParameter( int fieldId, int domainId )
-    {
-        Field field = fieldManager.get( fieldId );
-        
-        Domain domain = domainManager.get( domainId );
-        
-        return field.addParameterDomain( domain, false );
-    }
+    public int FieldML_EvaluateContinuousField( int fieldId, int cacheId, double[] values );
 }

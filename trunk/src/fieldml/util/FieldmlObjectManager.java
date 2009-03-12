@@ -40,12 +40,25 @@ public class FieldmlObjectManager<T extends FieldmlObject>
     }
 
 
-    public int add( T domain )
+    public int add( T object )
     {
         int id = generateNewUniqueId();
-        objects.put( id, domain );
-        objectIds.put( domain.getName(), id );
+        objects.put( id, object );
+        objectIds.put( object.getName(), id );
         return id;
+    }
+
+
+    public int remove( int id )
+    {
+        FieldmlObject object = objects.get( id );
+        
+        if( object != null )
+        {
+            objects.remove( id );
+            objectIds.remove( object.getName() );
+        }
+        return 0;
     }
 
 }
