@@ -79,5 +79,4 @@ public class BilinearLagrange
 
         return 0;
     }
-
 }
