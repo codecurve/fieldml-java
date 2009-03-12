@@ -7,9 +7,15 @@ import java.util.Map;
 import fieldml.domain.ContinuousDomain;
 import fieldml.domain.DiscreteDomain;
 import fieldml.domain.Domain;
+import fieldml.field.ComputedField;
+import fieldml.field.ComputedIndexField;
+import fieldml.field.ComputedRealField;
 import fieldml.field.Field;
 import fieldml.field.FieldParameters;
 import fieldml.field.IndexField;
+import fieldml.field.MappedField;
+import fieldml.field.MappedIndexField;
+import fieldml.field.MappedRealField;
 import fieldml.field.RealField;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -27,9 +33,10 @@ public class FieldMLJava
     private final FieldmlObjectManager<Field> fieldManager;
 
     private final FieldmlObjectManager<FieldParameters> cacheManager;
-    
+
     /**
-     * Temporary values that fields can evaluate into for the FieldML_Evaluate*Field calls.
+     * Temporary values that fields can evaluate into for the
+     * FieldML_Evaluate*Field calls.
      */
     private final Map<Field, Value> outputValues;
 
@@ -83,12 +90,10 @@ public class FieldMLJava
             // ERROR
             return -1;
         }
-        else
-        {
-            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
 
-            return continuousDomain.addComponent( componentName, min, max );
-        }
+        ContinuousDomain continuousDomain = (ContinuousDomain)domain;
+
+        return continuousDomain.addComponent( componentName, min, max );
     }
 
 
@@ -101,12 +106,10 @@ public class FieldMLJava
             // ERROR
             return -1;
         }
-        else
-        {
-            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
 
-            return discreteDomain.addComponent( componentName, start, count, values );
-        }
+        DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+
+        return discreteDomain.addComponent( componentName, start, count, values );
     }
 
 
@@ -118,7 +121,7 @@ public class FieldMLJava
         {
             DiscreteDomain discreteDomain = (DiscreteDomain)domain;
 
-            Field field = new IndexField( fieldManager, discreteDomain, name );
+            Field field = new ComputedIndexField( fieldManager, discreteDomain, name );
             outputValues.put( field, new Value( discreteDomain ) );
 
             return field.getId();
@@ -128,7 +131,36 @@ public class FieldMLJava
         {
             ContinuousDomain continuousDomain = (ContinuousDomain)domain;
 
-            Field field = new RealField( fieldManager, continuousDomain, name );
+            Field field = new ComputedRealField( fieldManager, continuousDomain, name );
+            outputValues.put( field, new Value( continuousDomain ) );
+
+            return field.getId();
+        }
+
+        // ERROR
+        return -1;
+    }
+
+
+    public int FieldML_CreateMappedField( String name, int valueDomainId )
+    {
+        Domain domain = domainManager.get( valueDomainId );
+
+        if( domain instanceof DiscreteDomain )
+        {
+            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+
+            Field field = new MappedIndexField( fieldManager, name, discreteDomain );
+            outputValues.put( field, new Value( discreteDomain ) );
+
+            return field.getId();
+
+        }
+        else if( domain instanceof ContinuousDomain )
+        {
+            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
+
+            Field field = new MappedRealField( fieldManager, name, continuousDomain );
             outputValues.put( field, new Value( continuousDomain ) );
 
             return field.getId();
@@ -143,15 +175,15 @@ public class FieldMLJava
     {
         Field field = fieldManager.get( fieldId );
 
-        if( !( field instanceof IndexField ) )
+        if( !( field instanceof MappedIndexField ) )
         {
             // ERROR
             return -1;
         }
 
-        IndexField indexField = (IndexField)field;
+        MappedIndexField mappedIndexField = (MappedIndexField)field;
 
-        return indexField.setComponentValues( parameterValue, componentValues );
+        return mappedIndexField.setComponentValues( parameterValue, componentValues );
     }
 
 
@@ -159,35 +191,69 @@ public class FieldMLJava
     {
         Field field = fieldManager.get( fieldId );
 
-        if( !( field instanceof RealField ) )
+        if( !( field instanceof MappedRealField ) )
         {
             // ERROR
             return -1;
         }
 
-        RealField indexField = (RealField)field;
+        MappedRealField mappedRealField = (MappedRealField)field;
 
-        return indexField.setComponentValues( parameterValue, componentValues );
+        return mappedRealField.setComponentValues( parameterValue, componentValues );
     }
 
 
-    public int FieldML_AddInputParameter( int fieldId, int domainId, boolean isIndexParameter )
+    public int FieldML_SetMappingParameter( int fieldId, int domainId, int componentIndex )
     {
         Field field = fieldManager.get( fieldId );
 
         Domain domain = domainManager.get( domainId );
 
-        return field.addInputParameter( domain, isIndexParameter );
+        if( !( field instanceof MappedField ) )
+        {
+            // ERROR
+            return -1;
+        }
+
+        MappedField mappedField = (MappedField)field;
+
+        return mappedField.setMappingParameterDomain( domain, componentIndex );
     }
 
 
-    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes, boolean isIndexParameter )
+    public int FieldML_AddInputParameter( int fieldId, int domainId )
+    {
+        Field field = fieldManager.get( fieldId );
+
+        Domain domain = domainManager.get( domainId );
+
+        if( !( field instanceof ComputedField ) )
+        {
+            // ERROR
+            return -1;
+        }
+
+        ComputedField computedField = (ComputedField)field;
+
+        return computedField.addInputParameter( domain );
+    }
+
+
+    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes )
     {
         Field field = fieldManager.get( fieldId );
 
         Field parameterField = fieldManager.get( mappingFieldId );
 
-        return field.addDerivedParameter( parameterField, parameterIndexes, isIndexParameter );
+        if( !( field instanceof ComputedField ) )
+        {
+            // ERROR
+            return -1;
+        }
+
+        ComputedField computedField = (ComputedField)field;
+
+        return computedField.addDerivedParameter( parameterField, parameterIndexes );
     }
 
 
@@ -281,16 +347,16 @@ public class FieldMLJava
     public int FieldML_SetContinousCacheValues( int cacheId, int parameterNumber, double[] values )
     {
         FieldParameters cache = cacheManager.get( cacheId );
-        
+
         double[] destination = cache.values.get( parameterNumber ).realValues;
         if( ( destination == null ) || ( destination.length > values.length ) )
         {
-            //ERROR
+            // ERROR
             return -1;
         }
-
-        System.arraycopy( values, 0, destination, 0, destination.length );
         
+        System.arraycopy( values, 0, destination, 0, destination.length );
+
         return 0;
     }
 
@@ -298,16 +364,16 @@ public class FieldMLJava
     public int FieldML_SetDiscreteCacheValues( int cacheId, int parameterNumber, int[] values )
     {
         FieldParameters cache = cacheManager.get( cacheId );
-        
+
         int[] destination = cache.values.get( parameterNumber ).indexValues;
         if( ( destination == null ) || ( destination.length > values.length ) )
         {
-            //ERROR
+            // ERROR
             return -1;
         }
 
         System.arraycopy( values, 0, destination, 0, destination.length );
-        
+
         return 0;
     }
 }

@@ -22,6 +22,10 @@ public interface FieldML
     //Field methods
     public int FieldML_CreateField( String name, int valueDomainId );
     
+    public int FieldML_CreateMappedField( String name, int valueDomainId );
+    
+    public int FieldML_SetMappingParameter( int fieldId, int domainId, int componentIndex );
+    
     public int FieldML_GetFieldParameterCount( int fieldId );
     
     public int FieldML_GetFieldParameterDomainIds( int fieldId, int[] domainIds );
@@ -30,13 +34,13 @@ public interface FieldML
     
     public int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues );
     
-    public int FieldML_AddInputParameter( int fieldId, int domainId, boolean isIndexParameter );
+    public int FieldML_AddInputParameter( int fieldId, int domainId );
     
     // Although the code only allows single-parameter mapping fields (i.e. domain -> domain), representing
     // the idea of changing a parameter's domain, it could be changed to allow multi-domain -> domain fields.
     // However, this would mean that a single mapped_parameter tag could induce any number of actual parameters,
     // as the mapping field itself could use a mapped_parameter, and so on.
-    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes, boolean isIndexParameter );
+    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes );
     
     //Cache methods. These could be extended to permit multi-member caches.
     public int FieldML_CreateCache( int[] domainIds, int parameterCount );
