@@ -17,6 +17,7 @@ import fieldml.field.MappedField;
 import fieldml.field.MappedIndexField;
 import fieldml.field.MappedRealField;
 import fieldml.field.RealField;
+import fieldml.field.library.BilinearLagrange;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
@@ -121,7 +122,17 @@ public class FieldMLJava
         {
             DiscreteDomain discreteDomain = (DiscreteDomain)domain;
 
-            Field field = new ComputedIndexField( fieldManager, discreteDomain, name );
+            Field field;
+
+            if( name.equals( "library::bilinear_lagrange" ) )
+            {
+                field = new BilinearLagrange( fieldManager, domainManager );
+            }
+            else
+            {
+                field = new ComputedIndexField( fieldManager, discreteDomain, name );
+            }
+
             outputValues.put( field, new Value( discreteDomain ) );
 
             return field.getId();
@@ -354,7 +365,7 @@ public class FieldMLJava
             // ERROR
             return -1;
         }
-        
+
         System.arraycopy( values, 0, destination, 0, destination.length );
 
         return 0;

@@ -82,7 +82,7 @@ public abstract class Field
     public abstract int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value );
 
 
-    void addParameterDomain( Domain domain )
+    protected void addParameterDomain( Domain domain )
     {
         parameterDomains.add( domain );
     }
