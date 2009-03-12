@@ -19,6 +19,12 @@ public class FieldmlObjectManager<T extends FieldmlObject>
     {
         return objects.get( id );
     }
+    
+    
+    public T get( String name )
+    {
+        return objects.get( objectIds.get( name ) );
+    }
 
 
     public int getId( String name )
