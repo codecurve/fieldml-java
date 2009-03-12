@@ -1,12 +1,10 @@
 package fieldml.field;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import fieldml.domain.DiscreteDomain;
+import fieldml.field.component.IndexComponent;
+import fieldml.field.component.IndexMappedIndexComponent;
 import fieldml.util.FieldmlObjectManager;
-import fieldml.value.RealValue;
+import fieldml.value.Value;
 
 /**
  * IndexField defines a non-composite index-valued field. Index-valued fields are separate from integer/real valued fields, as
@@ -20,62 +18,91 @@ import fieldml.value.RealValue;
 public class IndexField
     extends Field
 {
-    private final DiscreteDomain valueDomain;
-
-    private final Map<Integer, int[]> values;
+    private final IndexComponent[] components;
 
 
     public IndexField( FieldmlObjectManager<Field> manager, DiscreteDomain valueDomain, String name )
     {
-        super( manager, name );
+        super( manager, name, valueDomain );
 
-        this.valueDomain = valueDomain;
-
-        values = new HashMap<Integer, int[]>();
+        components = new IndexComponent[valueDomain.getComponentCount()];
     }
 
 
-    public int assignValues( int indexValue, int[] assignedValues )
+    public void importComponent( String componentName, IndexField field, int componentId )
     {
-        if( indexDomain == null )
+        int index = getComponentIndex( componentName );
+
+        components[index] = field.components[componentId];
+    }
+
+
+    // Specifying an arbitrarily nested composition of binary operators on domain, constant and/or
+    // imported arguments seems non-trivial. Perhaps passing an array of argument specifiers, and
+    // an array of operator specifiers, and applying an RPN-style evaluation algorithm might work.
+    public int setComponentEvaluation( String componentName )
+    {
+        if( indexParameter >= 0 )
         {
-            //ERROR field must have an index domain
-            return -1;
-        }
-        
-        if( assignedValues.length != getComponentCount() )
-        {
-            //ERROR
-            return -1;
-        }
-        
-        if( values.get( indexValue ) != null )
-        {
-            // ERROR already assigned
+            // ERROR cannot use evaluated components with an indexed field.
+            // NOTE at some point, we could permit some components to be indexed, and others evaluated.
+            // BUT NOT THIS DAY!
             return -1;
         }
 
-        values.put( indexValue, Arrays.copyOf( assignedValues, assignedValues.length ) );
+        // ERROR feature not supported
+        return -1;
+    }
+
+
+    @Override
+    int evaluateComponents( FieldParameters parameters, Value value )
+    {
+        // Auditting parameter and value correctness can be done when parsing input or processing
+        // FieldML API calls, and therefore need not be done here.
+        for( int i = 0; i < getComponentCount(); i++ )
+        {
+            value.realValues[i] = components[i].evaluate( parameters );
+        }
 
         return 0;
     }
 
 
-    public int evaluate( FieldParameters parameters, RealValue value )
+    public int setComponentValues( int parameterValue, int[] componentValues )
     {
-        int[] localValues = values.get( parameters.indexValues.get( 0 ).values[0] );
-
-        for( int i = 0; i < valueDomain.getComponentCount(); i++ )
+        if( indexParameter < 0 )
         {
-            value.values[i] = localValues[i];
+            // ERROR field must have an index domain
+            return -1;
+        }
+
+        if( componentValues.length < getComponentCount() )
+        {
+            // ERROR not enough values
+            return -1;
+        }
+
+        // MUSTDO ensure that assignValues is only called for indexed fields.
+
+        for( int i = 0; i < components.length; i++ )
+        {
+            IndexMappedIndexComponent component;
+
+            if( components[i] == null )
+            {
+                // TODO Allow a particular component from a multi-component field to be used as an index.
+                component = new IndexMappedIndexComponent( indexParameter, 0 );
+                components[i] = component;
+            }
+            else
+            {
+                component = (IndexMappedIndexComponent)components[i];
+            }
+
+            component.setValue( parameterValue, componentValues[i] );
         }
 
         return 0;
-    }
-
-
-    public int getComponentCount()
-    {
-        return valueDomain.getComponentCount();
     }
 }

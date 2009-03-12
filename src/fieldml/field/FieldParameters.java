@@ -2,39 +2,63 @@ package fieldml.field;
 
 import java.util.ArrayList;
 
-import fieldml.domain.ContinuousDomain;
-import fieldml.domain.DiscreteDomain;
-import fieldml.value.IndexValue;
-import fieldml.value.RealValue;
+import fieldml.domain.Domain;
+import fieldml.util.FieldmlObject;
+import fieldml.util.FieldmlObjectManager;
+import fieldml.value.Value;
 
 /**
- * This class essentially maintains a list of dynamic casts, allowing clients to access
- * values by index without having to use instanceof or casting.
+ * This class essentially maintains a list of dynamic casts, allowing clients to access values by index without having to use
+ * instanceof or casting.
  */
 public class FieldParameters
+    implements FieldmlObject
 {
-    public final ArrayList<RealValue> realValues;
+    public final ArrayList<Value> values;
+    
+    public int count;
 
-    public final ArrayList<IndexValue> indexValues;
+    private final int id;
 
 
-    public FieldParameters()
+    public FieldParameters( FieldmlObjectManager<FieldParameters> manager, ArrayList<Domain> domains )
     {
-        realValues = new ArrayList<RealValue>();
-        indexValues = new ArrayList<IndexValue>();
+        values = new ArrayList<Value>();
+
+        for( Domain parameterDomain : domains )
+        {
+            values.add( new Value( parameterDomain ) );
+        }
+        
+        this.id = manager.add( this );
+    }
+    
+    
+    FieldParameters()
+    {
+        values = new ArrayList<Value>();
+
+        id = 0;
     }
 
 
-    public void addDomainValue( ContinuousDomain domain )
+    void addDomain( Domain domain )
     {
-        realValues.add( new RealValue( domain ) );
-        indexValues.add( null );
+        values.add( new Value( domain ) );
     }
 
 
-    public void addDomainValue( DiscreteDomain domain )
+    @Override
+    public int getId()
     {
-        realValues.add( null );
-        indexValues.add( new IndexValue( domain ) );
+        return id;
+    }
+
+
+    @Override
+    public String getName()
+    {
+        // Cache names are never visible to the API user.
+        return toString();
     }
 }

@@ -26,6 +26,8 @@ public class FieldmlSaxHandler
     private ParsingState state;
 
     private int currentId;
+    
+    private final FieldML fieldml;
 
     @Override
     public void startElement( String uri, String localName, String qName, Attributes attributes )
@@ -43,7 +45,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "index" ) == 0 )
                 {
-                    currentId = FieldML.FieldML_CreateDiscreteDomain( attributes.getValue( "name" ) );
+                    currentId = fieldml.FieldML_CreateDiscreteDomain( attributes.getValue( "name" ) );
                     state = ParsingState.DISCRETE_DOMAIN;
                 }
                 else
@@ -62,7 +64,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "real" ) == 0 )
                 {
-                    currentId = FieldML.FieldML_CreateContinuousDomain( attributes.getValue( "name" ) );
+                    currentId = fieldml.FieldML_CreateContinuousDomain( attributes.getValue( "name" ) );
                     state = ParsingState.CONTINUOUS_DOMAIN;
                 }
                 else
@@ -92,7 +94,7 @@ public class FieldmlSaxHandler
                     max = Double.parseDouble( attributes.getValue( "max" ) );
                 }
 
-                FieldML.FieldML_AddContinuousDomainComponent( currentId, attributes.getValue( "id" ), min, max );
+                fieldml.FieldML_AddContinuousDomainComponent( currentId, attributes.getValue( "id" ), min, max );
             }
         }
         else if( state == ParsingState.DISCRETE_DOMAIN )
@@ -138,7 +140,7 @@ public class FieldmlSaxHandler
                 // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
                 int[] values = getValues( characters.toString() );
                 
-                FieldML.FieldML_AddDiscreteDomainComponent( currentId, currentName, 0, values.length, values ); 
+                fieldml.FieldML_AddDiscreteDomainComponent( currentId, currentName, 0, values.length, values ); 
             }
         }
     }
@@ -160,6 +162,8 @@ public class FieldmlSaxHandler
     private FieldmlSaxHandler()
     {
         characters = new StringBuilder();
+        
+        fieldml = new FieldMLJava();
     }
 
 
