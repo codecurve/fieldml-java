@@ -8,6 +8,7 @@ import fieldml.domain.DiscreteDomain;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
+// TODO: Needs Javadoc
 public class MappedIndexField
     extends MappedField
     implements IndexField
@@ -42,7 +43,10 @@ public class MappedIndexField
     @Override
     public int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
     {
-        int keyValue = parameters.values.get( parameterIndexes[0] ).indexValues[keyComponentIndex];
+    	// TODO: This code could be more self-documenting, value2 was extracted, but a more meaningful name for it is required.
+        Value value2 = parameters.values.get( parameterIndexes[0] );
+		int keyValue = value2.indexValues[keyComponentIndex];
+		
         int[] values = valueMap.get( keyValue );
         int count = getComponentCount();
 
