@@ -79,6 +79,7 @@ public abstract class Field
     }
 
 
+    // TODO: Needs Javadoc.
     public abstract int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value );
 
 

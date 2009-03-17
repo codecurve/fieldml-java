@@ -6,7 +6,7 @@ import fieldml.util.FieldmlObjectManager;
 public abstract class MappedField
     extends Field
 {
-    int keyComponentIndex;
+    protected int keyComponentIndex;
 
 
     public MappedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
