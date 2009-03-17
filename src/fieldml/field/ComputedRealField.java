@@ -41,7 +41,7 @@ public class ComputedRealField
     @Override
     int evaluateComponents( FieldParameters parameters, Value value )
     {
-        // Auditting parameter and value correctness can be done when parsing input or processing
+        // Auditing parameter and value correctness can be done when parsing input or processing
         // FieldML API calls, and therefore need not be done here.
         for( int i = 0; i < getComponentCount(); i++ )
         {
