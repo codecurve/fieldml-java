@@ -16,7 +16,7 @@
     </component>
   </discrete_domain>
   
-  <continuous_domain id="element.parameters" value="real" >
+  <continuous_domain id="node.parameters" value="real" >
     <component id="x" />
     <component id="y" />
     <component id="g" />

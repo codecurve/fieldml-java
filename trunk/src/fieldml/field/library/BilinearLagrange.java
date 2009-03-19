@@ -1,6 +1,8 @@
 package fieldml.field.library;
 
 import fieldml.domain.Domain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.field.Field;
 import fieldml.field.FieldParameters;
 import fieldml.field.RealField;
@@ -59,24 +61,36 @@ public class BilinearLagrange
     implements RealField
 {
     public BilinearLagrange( FieldmlObjectManager<Field> manager, FieldmlObjectManager<Domain> domainManager )
+        throws FieldmlException
     {
         super( manager, "library::bilinear_lagrange", domainManager.get( "library::bilinear_interpolation_parameters" ) );
 
-        addParameterDomain( domainManager.get( "library::unit_square" ) );
+        addParameter( "xi", domainManager.get( "library::unit_square" ) );
     }
 
 
     @Override
-    public int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+        throws FieldmlException
     {
-        double xi1 = parameters.values.get( parameterIndexes[0] ).realValues[0];
-        double xi2 = parameters.values.get( parameterIndexes[0] ).realValues[1];
+        if( parameterIndexes.length < 1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        Value parameter0 = parameters.values.get( parameterIndexes[0] );
+        
+        if( ( parameter0.realValues == null ) || ( parameter0.realValues.length < 2 ) ||
+            ( value.realValues == null ) || ( value.realValues.length < 4 ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        
+        double xi1 = parameter0.realValues[0];
+        double xi2 = parameter0.realValues[1];
 
         value.realValues[0] = ( 1 - xi1 ) * ( 1 - xi2 );
         value.realValues[1] = xi1 * ( 1 - xi2 );
         value.realValues[2] = ( 1 - xi1 ) * xi2;
         value.realValues[3] = xi1 * xi2;
-
-        return 0;
     }
 }

@@ -3,6 +3,8 @@ package fieldml.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 
@@ -10,10 +12,12 @@ public abstract class Domain
     implements FieldmlObject
 {
     /**
-     * A globally unique integer identifying the domain, useful for internal (inter-process) and external (client-server)
-     * communication. In order to remain globally unique, this id number cannot be user-supplied. Domains can be imported from
-     * external sources, and can therefore have id numbers which are not known in advance by the user of the API when creating
-     * their own domains.
+     * A globally unique integer identifying the domain, useful for internal
+     * (inter-process) and external (client-server) communication. In order to
+     * remain globally unique, this id number cannot be user-supplied. Domains
+     * can be imported from external sources, and can therefore have id numbers
+     * which are not known in advance by the user of the API when creating their
+     * own domains.
      */
     private final int id;
 
@@ -24,13 +28,10 @@ public abstract class Domain
 
     private final List<String> componentNames = new ArrayList<String>();
 
-    private final FieldmlObjectManager<Domain> manager;
-
 
     public Domain( FieldmlObjectManager<Domain> manager, String name )
     {
         this.name = name;
-        this.manager = manager;
 
         id = manager.add( this );
     }
@@ -61,28 +62,32 @@ public abstract class Domain
     }
 
 
-    public String getComponentName( int componentNumber )
+    public String getComponentName( int componentIndex )
+        throws FieldmlException
     {
-        if( ( componentNumber < 0 ) || ( componentNumber >= componentNames.size() ) )
+        if( ( componentIndex < 0 ) || ( componentIndex >= componentNames.size() ) )
         {
-            return null;
+            throw new BadFieldmlParameterException();
         }
 
-        return componentNames.get( componentNumber );
+        return componentNames.get( componentIndex );
     }
 
 
     // This should not be directly invoked except by descendant classes.
-    int addComponent( String componentName )
+    void addComponent( String componentName )
+        throws FieldmlException
     {
-        // TODO Uniqueness check!
-        componentNames.add( componentName );
+        if( getComponentIndex( componentName ) != -1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
 
-        return componentNames.size();
+        componentNames.add( componentName );
     }
 
 
-    public int getComponentId( String componentName )
+    public int getComponentIndex( String componentName )
     {
         return componentNames.indexOf( componentName );
     }

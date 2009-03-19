@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 
 public class DiscreteDomain
@@ -19,24 +21,47 @@ public class DiscreteDomain
     }
 
 
-    // TODO Not self documenting. Why are only some of the array elements from "values" copied?
-    public int addComponent( String componentName, int valueStart, int valueCount, int[] values )
+    public void addComponent( String componentName, int[] values, int valueCount )
+        throws FieldmlException
     {
+        if( values.length < valueCount )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
         super.addComponent( componentName );
 
-        // TODO Bounds check needed?
-        componentValues.add( Arrays.copyOfRange( values, valueStart, valueStart + valueCount - 1 ) );
-
-        return componentValues.size();
+        componentValues.add( Arrays.copyOfRange( values, 0, valueCount - 1 ) );
     }
 
 
-    public int importComponent( String newComponentName, DiscreteDomain domain, int componentId )
+    public int getComponentValueCount( int componentIndex )
+        throws FieldmlException
     {
-        super.addComponent( newComponentName );
+        if( ( componentIndex < 0 ) || ( componentIndex >= componentValues.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
 
-        componentValues.add( domain.componentValues.get( componentId ) );
+        return componentValues.get( componentIndex ).length;
+    }
 
-        return componentValues.size();
+
+    public void getComponentValues( int componentIndex, int[] values )
+        throws FieldmlException
+    {
+        if( ( componentIndex < 0 ) || ( componentIndex >= componentValues.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        int[] sourceValues = componentValues.get( componentIndex );
+
+        if( values.length < sourceValues.length )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        System.arraycopy( sourceValues, 0, values, 0, sourceValues.length );
     }
 }

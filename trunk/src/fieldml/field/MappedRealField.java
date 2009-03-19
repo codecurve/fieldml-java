@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fieldml.domain.ContinuousDomain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
@@ -23,26 +25,40 @@ public class MappedRealField
     }
 
 
-    public int setComponentValues( int parameterValue, double[] componentValues )
+    public void setComponentValues( int parameterValue, double[] componentValues )
+        throws FieldmlException
     {
         int componentCount = getComponentCount();
 
         if( componentValues.length < componentCount )
         {
-            // ERROR not enough values
-            return -1;
+            throw new BadFieldmlParameterException();
         }
 
         valueMap.put( parameterValue, Arrays.copyOf( componentValues, componentCount ) );
-
-        return 0;
     }
 
 
     @Override
-    public int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+        throws FieldmlException
     {
-        int keyValue = parameters.values.get( parameterIndexes[0] ).indexValues[keyComponentIndex];
+        if( parameterIndexes.length < 1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        Value parameter = parameters.values.get( parameterIndexes[0] );
+
+        if( ( parameter.indexValues == null ) || ( parameter.indexValues.length <= keyComponentIndex ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        if( ( value.realValues == null ) || ( value.realValues.length < getComponentCount() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        int keyValue = parameter.indexValues[keyComponentIndex];
         double[] values = valueMap.get( keyValue );
         int count = getComponentCount();
 
@@ -50,7 +66,19 @@ public class MappedRealField
         {
             value.realValues[i] = values[i];
         }
+    }
 
-        return 0;
+
+    public void getComponentValues( int parameterValue, double[] componentValues )
+        throws FieldmlException
+    {
+        double[] values = valueMap.get( parameterValue );
+
+        if( ( values == null ) || ( componentValues.length < values.length ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        System.arraycopy( values, 0, componentValues, 0, getComponentCount() );
     }
 }

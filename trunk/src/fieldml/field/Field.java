@@ -3,6 +3,8 @@ package fieldml.field;
 import java.util.ArrayList;
 
 import fieldml.domain.Domain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -13,10 +15,12 @@ public abstract class Field
     Domain valueDomain;
 
     /**
-     * A globally unique integer identifying the field, useful for internal (inter-process) and external (client-server)
-     * communication. In order to remain globally unique, this id number cannot be user-supplied. Fields can be imported from
-     * external sources, and can therefore have id numbers which are not known in advance by the user of the API when creating
-     * their own fields.
+     * A globally unique integer identifying the field, useful for internal
+     * (inter-process) and external (client-server) communication. In order to
+     * remain globally unique, this id number cannot be user-supplied. Fields
+     * can be imported from external sources, and can therefore have id numbers
+     * which are not known in advance by the user of the API when creating their
+     * own fields.
      */
     private final int id;
 
@@ -26,9 +30,15 @@ public abstract class Field
     private final String name;
 
     /**
-     * The domains for each input parameter. These will not necessarily be the same as the domains of fieldParameters
+     * The domains for each input parameter. These will not necessarily be the
+     * same as the domains of fieldParameters
      */
     private final ArrayList<Domain> parameterDomains;
+    
+    /**
+     * This is essentially a list of debug symbols, and is not actually referenced during evaulation.
+     */
+    private final ArrayList<String> parameterNames;
 
 
     public Field( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
@@ -37,6 +47,7 @@ public abstract class Field
         this.valueDomain = valueDomain;
 
         parameterDomains = new ArrayList<Domain>();
+        parameterNames = new ArrayList<String>();
 
         id = manager.add( this );
     }
@@ -69,7 +80,7 @@ public abstract class Field
 
     int getComponentIndex( String componentName )
     {
-        return valueDomain.getComponentId( componentName );
+        return valueDomain.getComponentIndex( componentName );
     }
 
 
@@ -80,34 +91,58 @@ public abstract class Field
 
 
     // TODO: Needs Javadoc.
-    public abstract int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value );
+    public abstract void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+        throws FieldmlException;
 
 
-    protected void addParameterDomain( Domain domain )
+    protected void addParameter( String parameterName, Domain domain )
     {
         parameterDomains.add( domain );
+        parameterNames.add( parameterName );
     }
-    
-    
-    public int getParameterCount()
+
+
+    public int getInputParameterCount()
     {
         return parameterDomains.size();
     }
 
 
-    public int getParameterDomainIds( int[] domainIds )
+    public void getInputParameterDomains( int[] domainIds )
+        throws FieldmlException
     {
         if( domainIds.length < parameterDomains.size() )
         {
-            // ERROR
-            return -1;
+            throw new BadFieldmlParameterException();
         }
 
         for( int i = 0; i < parameterDomains.size(); i++ )
         {
             domainIds[i] = parameterDomains.get( i ).getId();
         }
+    }
 
-        return 0;
+
+    public Domain getInputParameterDomain( int parameterIndex )
+        throws FieldmlException
+    {
+        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameterDomains.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        return parameterDomains.get( parameterIndex );
+    }
+
+
+    public String getParameterName( int parameterIndex )
+        throws FieldmlException
+    {
+        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameterDomains.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        return parameterNames.get( parameterIndex );
     }
 }

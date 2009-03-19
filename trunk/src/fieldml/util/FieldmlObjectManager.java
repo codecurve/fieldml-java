@@ -3,10 +3,14 @@ package fieldml.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import fieldml.exception.FieldmlException;
+import fieldml.exception.NoSuchFieldmlObjectException;
+import fieldml.exception.WrongFieldmlObjectTypeException;
+
 /**
  * Tracks all top level fieldml objects
  */
-public class FieldmlObjectManager<T extends FieldmlObject> 
+public class FieldmlObjectManager<T extends FieldmlObject>
 {
     private static final int ID_FUDGE = 10000;
 
@@ -15,25 +19,40 @@ public class FieldmlObjectManager<T extends FieldmlObject>
     private final Map<String, Integer> objectIds = new HashMap<String, Integer>();
 
 
-    public T get( int id )
+    public FieldmlObjectManager()
     {
-        return objects.get( id );
     }
-    
-    
-    public T get( String name )
+
+
+    public T get( int id )
+        throws FieldmlException
     {
-        return objects.get( objectIds.get( name ) );
+        T object = objects.get( id );
+
+        if( object == null )
+        {
+            throw new NoSuchFieldmlObjectException( id );
+        }
+
+        return object;
+    }
+
+
+    public T get( String name )
+        throws FieldmlException
+    {
+        return get( getId( name ) );
     }
 
 
     public int getId( String name )
+        throws FieldmlException
     {
         Integer id = objectIds.get( name );
 
         if( id == null )
         {
-            return 0;
+            throw new NoSuchFieldmlObjectException( id );
         }
 
         return id;
@@ -51,20 +70,40 @@ public class FieldmlObjectManager<T extends FieldmlObject>
         int id = generateNewUniqueId();
         objects.put( id, object );
         objectIds.put( object.getName(), id );
+
         return id;
     }
 
 
-    public int remove( int id )
+    public void remove( int id )
     {
         FieldmlObject object = objects.get( id );
-        
+
         if( object != null )
         {
             objects.remove( id );
             objectIds.remove( object.getName() );
         }
-        return 0;
     }
 
+
+    public <S> S getByClass( int id, Class<S> objectClass )
+        throws FieldmlException
+    {
+        T object = get( id );
+
+        if( object == null )
+        {
+            throw new NoSuchFieldmlObjectException( id );
+        }
+
+        try
+        {
+            return objectClass.cast( object );
+        }
+        catch( ClassCastException e )
+        {
+            throw new WrongFieldmlObjectTypeException();
+        }
+    }
 }

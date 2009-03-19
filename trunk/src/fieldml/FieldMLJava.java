@@ -7,16 +7,15 @@ import java.util.Map;
 import fieldml.domain.ContinuousDomain;
 import fieldml.domain.DiscreteDomain;
 import fieldml.domain.Domain;
+import fieldml.exception.FieldmlException;
 import fieldml.field.ComputedField;
 import fieldml.field.ComputedIndexField;
 import fieldml.field.ComputedRealField;
 import fieldml.field.Field;
 import fieldml.field.FieldParameters;
-import fieldml.field.IndexField;
 import fieldml.field.MappedField;
 import fieldml.field.MappedIndexField;
 import fieldml.field.MappedRealField;
-import fieldml.field.RealField;
 import fieldml.field.library.BilinearInterpolation;
 import fieldml.field.library.BilinearLagrange;
 import fieldml.util.FieldmlObjectManager;
@@ -79,318 +78,694 @@ public class FieldMLJava
 
     public int FieldML_GetDomainId( String originalDomainName )
     {
-        return domainManager.getId( originalDomainName );
+        try
+        {
+            return domainManager.getId( originalDomainName );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_AddContinuousDomainComponent( int domainId, String componentName, double min, double max )
     {
-        Domain domain = domainManager.get( domainId );
-
-        if( !( domain instanceof ContinuousDomain ) )
+        try
         {
-            // ERROR
-            return -1;
+            ContinuousDomain domain = domainManager.getByClass( domainId, ContinuousDomain.class );
+
+            domain.addComponent( componentName, min, max );
+
+            return domain.getComponentCount();
         }
-
-        ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-
-        return continuousDomain.addComponent( componentName, min, max );
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
-    public int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int start, int count, int[] values )
+    public int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int[] values, int valueCount )
     {
-        Domain domain = domainManager.get( domainId );
-
-        if( !( domain instanceof DiscreteDomain ) )
+        try
         {
-            // ERROR
-            return -1;
+            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+
+            domain.addComponent( componentName, values, valueCount );
+
+            return domain.getComponentCount();
         }
-
-        DiscreteDomain discreteDomain = (DiscreteDomain)domain;
-
-        return discreteDomain.addComponent( componentName, start, count, values );
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_CreateField( String name, int valueDomainId )
     {
-        Domain domain = domainManager.get( valueDomainId );
-
-        if( domain instanceof DiscreteDomain )
+        // We could use domains to generate correctly-typed fields here without
+        // having to use instaceofs.
+        try
         {
-            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+            Domain domain = domainManager.get( valueDomainId );
 
-            Field field = new ComputedIndexField( fieldManager, discreteDomain, name );
-
-            outputValues.put( field, new Value( discreteDomain ) );
-
-            return field.getId();
-
-        }
-        else if( domain instanceof ContinuousDomain )
-        {
-            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-
-            Field field;
-
-            if( name.equals( "library::bilinear_lagrange" ) )
+            if( domain instanceof DiscreteDomain )
             {
-                field = new BilinearLagrange( fieldManager, domainManager );
+                DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+
+                Field field = new ComputedIndexField( fieldManager, discreteDomain, name );
+
+                outputValues.put( field, new Value( discreteDomain ) );
+
+                return field.getId();
+
             }
-            else if( name.equals( "library::bilinear_interpolation" ) )
+            else if( domain instanceof ContinuousDomain )
             {
-                field = new BilinearInterpolation( fieldManager, domainManager );
+                ContinuousDomain continuousDomain = (ContinuousDomain)domain;
+
+                Field field;
+
+                if( name.equals( "library::bilinear_lagrange" ) )
+                {
+                    field = new BilinearLagrange( fieldManager, domainManager );
+                }
+                else if( name.equals( "library::bilinear_interpolation" ) )
+                {
+                    field = new BilinearInterpolation( fieldManager, domainManager );
+                }
+                else
+                {
+                    field = new ComputedRealField( fieldManager, continuousDomain, name );
+                }
+
+                outputValues.put( field, new Value( continuousDomain ) );
+
+                return field.getId();
             }
             else
             {
-                field = new ComputedRealField( fieldManager, continuousDomain, name );
+                return ERR_WRONG_OBJECT_TYPE;
             }
-
-            outputValues.put( field, new Value( continuousDomain ) );
-
-            return field.getId();
         }
-
-        // ERROR
-        return -1;
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_CreateMappedField( String name, int valueDomainId )
     {
-        Domain domain = domainManager.get( valueDomainId );
-
-        if( domain instanceof DiscreteDomain )
+        try
         {
-            DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+            Domain domain = domainManager.get( valueDomainId );
 
-            Field field = new MappedIndexField( fieldManager, name, discreteDomain );
-            outputValues.put( field, new Value( discreteDomain ) );
+            if( domain instanceof DiscreteDomain )
+            {
+                DiscreteDomain discreteDomain = (DiscreteDomain)domain;
 
-            return field.getId();
+                Field field = new MappedIndexField( fieldManager, name, discreteDomain );
+                outputValues.put( field, new Value( discreteDomain ) );
 
+                return field.getId();
+
+            }
+            else if( domain instanceof ContinuousDomain )
+            {
+                ContinuousDomain continuousDomain = (ContinuousDomain)domain;
+
+                Field field = new MappedRealField( fieldManager, name, continuousDomain );
+                outputValues.put( field, new Value( continuousDomain ) );
+
+                return field.getId();
+            }
+            else
+            {
+                return ERR_WRONG_OBJECT_TYPE;
+            }
         }
-        else if( domain instanceof ContinuousDomain )
+        catch( FieldmlException e )
         {
-            ContinuousDomain continuousDomain = (ContinuousDomain)domain;
-
-            Field field = new MappedRealField( fieldManager, name, continuousDomain );
-            outputValues.put( field, new Value( continuousDomain ) );
-
-            return field.getId();
+            return e.errorCode;
         }
-
-        // ERROR
-        return -1;
     }
 
 
     public int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues )
     {
-        Field field = fieldManager.get( fieldId );
-
-        if( !( field instanceof MappedIndexField ) )
+        try
         {
-            // ERROR
-            return -1;
+            MappedIndexField field = fieldManager.getByClass( fieldId, MappedIndexField.class );
+
+            field.setComponentValues( parameterValue, componentValues );
+
+            return NO_ERROR;
         }
-
-        MappedIndexField mappedIndexField = (MappedIndexField)field;
-
-        return mappedIndexField.setComponentValues( parameterValue, componentValues );
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues )
     {
-        Field field = fieldManager.get( fieldId );
-
-        if( !( field instanceof MappedRealField ) )
+        try
         {
-            // ERROR
-            return -1;
+            MappedRealField field = fieldManager.getByClass( fieldId, MappedRealField.class );
+
+            field.setComponentValues( parameterValue, componentValues );
+
+            return NO_ERROR;
         }
-
-        MappedRealField mappedRealField = (MappedRealField)field;
-
-        return mappedRealField.setComponentValues( parameterValue, componentValues );
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_SetMappingParameter( int fieldId, int domainId, int componentIndex )
     {
-        Field field = fieldManager.get( fieldId );
-
-        Domain domain = domainManager.get( domainId );
-
-        if( !( field instanceof MappedField ) )
+        try
         {
-            // ERROR
-            return -1;
+            MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
+
+            Domain domain = domainManager.get( domainId );
+
+            field.setMappingParameterDomain( domain, componentIndex );
+
+            return NO_ERROR;
         }
-
-        MappedField mappedField = (MappedField)field;
-
-        return mappedField.setMappingParameterDomain( domain, componentIndex );
-    }
-
-
-    public int FieldML_AddInputParameter( int fieldId, int domainId )
-    {
-        Field field = fieldManager.get( fieldId );
-
-        Domain domain = domainManager.get( domainId );
-
-        if( !( field instanceof ComputedField ) )
+        catch( FieldmlException e )
         {
-            // ERROR
-            return -1;
+            return e.errorCode;
         }
-
-        ComputedField computedField = (ComputedField)field;
-
-        return computedField.addInputParameter( domain );
     }
 
 
-    public int FieldML_AddDerivedParameter( int fieldId, int mappingFieldId, int[] parameterIndexes )
+    public int FieldML_AddInputParameter( int fieldId, String parameterName, int domainId )
     {
-        Field field = fieldManager.get( fieldId );
-
-        Field parameterField = fieldManager.get( mappingFieldId );
-
-        if( !( field instanceof ComputedField ) )
+        try
         {
-            // ERROR
-            return -1;
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            Domain domain = domainManager.get( domainId );
+
+            field.addInputParameter( parameterName, domain );
+
+            return NO_ERROR;
         }
-
-        ComputedField computedField = (ComputedField)field;
-
-        return computedField.addDerivedParameter( parameterField, parameterIndexes );
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
-    public int FieldML_GetFieldParameterCount( int fieldId )
+    public int FieldML_AddDerivedParameter( int fieldId, String parameterName, int mappingFieldId, int[] argumentIndexes )
     {
-        Field field = fieldManager.get( fieldId );
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
 
-        return field.getParameterCount();
+            Field parameterField = fieldManager.get( mappingFieldId );
+
+            field.addDerivedParameter( parameterName, parameterField, argumentIndexes );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
-    public int FieldML_GetFieldParameterDomainIds( int fieldId, int[] domainIds )
+    public int FieldML_GetInputParameterCount( int fieldId )
     {
-        Field field = fieldManager.get( fieldId );
+        try
+        {
+            Field field = fieldManager.get( fieldId );
 
-        return field.getParameterDomainIds( domainIds );
+            return field.getInputParameterCount();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetInputParameterDomains( int fieldId, int[] domainIds )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+
+            field.getInputParameterDomains( domainIds );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_CreateCache( int[] domainIds, int parameterCount )
     {
-        ArrayList<Domain> domains = new ArrayList<Domain>();
-
-        for( int i = 0; i < parameterCount; i++ )
+        try
         {
-            domains.add( domainManager.get( domainIds[i] ) );
+            ArrayList<Domain> domains = new ArrayList<Domain>();
+
+            for( int i = 0; i < parameterCount; i++ )
+            {
+                domains.add( domainManager.get( domainIds[i] ) );
+            }
+
+            FieldParameters cache = new FieldParameters( cacheManager, domains );
+
+            return cache.getId();
         }
-
-        FieldParameters cache = new FieldParameters( cacheManager, domains );
-
-        return cache.getId();
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_DestroyCache( int cacheId )
     {
-        return cacheManager.remove( cacheId );
+        cacheManager.remove( cacheId );
+
+        return NO_ERROR;
     }
 
 
     public int FieldML_EvaluateContinuousField( int fieldId, int cacheId, double[] values )
     {
-        Field field = fieldManager.get( fieldId );
-
-        FieldParameters cache = cacheManager.get( cacheId );
-
-        if( !( field instanceof RealField ) )
+        try
         {
-            // ERROR
-            return -1;
-        }
+            Field field = fieldManager.get( fieldId );
 
-        Value output = outputValues.get( field );
+            FieldParameters cache = cacheManager.get( cacheId );
 
-        int err = field.evaluate( cache, initialParameterIndexes, output );
+            Value output = outputValues.get( field );
 
-        if( err == 0 )
-        {
+            field.evaluate( cache, initialParameterIndexes, output );
+
             System.arraycopy( output.realValues, 0, values, 0, output.realValues.length );
-        }
 
-        return err;
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_EvaluateDiscreteField( int fieldId, int cacheId, int[] values )
     {
-        Field field = fieldManager.get( fieldId );
-
-        FieldParameters cache = cacheManager.get( cacheId );
-
-        if( !( field instanceof IndexField ) )
+        try
         {
-            // ERROR
-            return -1;
-        }
+            Field field = fieldManager.get( fieldId );
 
-        Value output = outputValues.get( field );
+            FieldParameters cache = cacheManager.get( cacheId );
 
-        int err = field.evaluate( cache, initialParameterIndexes, output );
+            Value output = outputValues.get( field );
 
-        if( err == 0 )
-        {
+            field.evaluate( cache, initialParameterIndexes, output );
+
             System.arraycopy( output.indexValues, 0, values, 0, output.indexValues.length );
+
+            return NO_ERROR;
         }
 
-        return err;
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_SetContinousCacheValues( int cacheId, int parameterNumber, double[] values )
     {
-        FieldParameters cache = cacheManager.get( cacheId );
-
-        double[] destination = cache.values.get( parameterNumber ).realValues;
-        if( ( destination == null ) || ( destination.length > values.length ) )
+        try
         {
-            // ERROR
-            return -1;
+            FieldParameters cache = cacheManager.get( cacheId );
+
+            double[] destination = cache.values.get( parameterNumber ).realValues;
+            if( destination == null )
+            {
+                return ERR_WRONG_OBJECT_TYPE;
+            }
+            if( destination.length > values.length )
+            {
+                return ERR_BAD_PARAMETER;
+            }
+
+            System.arraycopy( values, 0, destination, 0, destination.length );
+
+            return NO_ERROR;
         }
-
-        System.arraycopy( values, 0, destination, 0, destination.length );
-
-        return 0;
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_SetDiscreteCacheValues( int cacheId, int parameterNumber, int[] values )
     {
-        FieldParameters cache = cacheManager.get( cacheId );
-
-        int[] destination = cache.values.get( parameterNumber ).indexValues;
-        if( ( destination == null ) || ( destination.length > values.length ) )
+        try
         {
-            // ERROR
-            return -1;
+            FieldParameters cache = cacheManager.get( cacheId );
+
+            int[] destination = cache.values.get( parameterNumber ).indexValues;
+            if( destination == null )
+            {
+                return ERR_WRONG_OBJECT_TYPE;
+            }
+            if( destination.length > values.length )
+            {
+                return ERR_BAD_PARAMETER;
+            }
+
+            System.arraycopy( values, 0, destination, 0, destination.length );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues )
+    {
+        try
+        {
+            MappedRealField field = fieldManager.getByClass( fieldId, MappedRealField.class );
+
+            field.getComponentValues( parameterValue, componentValues );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetContinuousDomainComponentExtrema( int domainId, int componentIndex, double[] values )
+    {
+        try
+        {
+            ContinuousDomain domain = domainManager.getByClass( domainId, ContinuousDomain.class );
+
+            domain.getComponentExtrema( componentIndex, values );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues )
+    {
+        try
+        {
+            MappedIndexField field = fieldManager.getByClass( fieldId, MappedIndexField.class );
+
+            field.getComponentValues( parameterValue, componentValues );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDiscreteDomainComponentValueCount( int domainId, int componentIndex )
+    {
+        try
+        {
+            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+
+            return domain.getComponentValueCount( componentIndex );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDiscreteDomainComponentValues( int domainId, int componentIndex, int[] values )
+    {
+        try
+        {
+            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+
+            domain.getComponentValues( componentIndex, values );
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDomainComponentCount( int domainId )
+    {
+        try
+        {
+            Domain domain = domainManager.get( domainId );
+
+            return domain.getComponentCount();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDomainComponentName( int domainId, int componentIndex, char[] name )
+    {
+        try
+        {
+            //TODO We need a better way to return strings.
+            Domain domain = domainManager.get( domainId );
+
+            String nameString = domain.getComponentName( componentIndex );
+            
+            //TODO Send the chars back
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
         }
 
-        System.arraycopy( values, 0, destination, 0, destination.length );
+    }
 
-        return 0;
+
+    public int FieldML_GetParameterCount( int fieldId )
+    {
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            return field.getParameterCount();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDerivedParameterField( int fieldId, int derivedParameterIndex )
+    {
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            return field.getDerivedParameterField( derivedParameterIndex );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetInputParameterDomain( int fieldId, int parameterIndex )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+
+            Domain domain = field.getInputParameterDomain( parameterIndex );
+            
+            return domain.getId();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetParameterName( int fieldId, int parameterIndex, char[] name )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+
+            String parameterName = field.getParameterName( parameterIndex );
+
+            //TODO Send the chars back
+            
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetMappingParameterComponentIndex( int fieldId )
+    {
+        try
+        {
+            MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
+
+            return field.getMappingParameterComponentIndex();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetMappingParameterDomain( int fieldId )
+    {
+        try
+        {
+            MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
+
+            Domain domain = field.getMappingParameterDomain();
+            
+            return domain.getId();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDerivedParameterArguments( int fieldId, int derivedParameterIndex, int[] argumentIndexes )
+    {
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            return field.getDerivedParameterArguments( derivedParameterIndex, argumentIndexes );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    @Override
+    public int FieldML_GetDomainName( int domainId, char[] name )
+    {
+        try
+        {
+            Domain domain = domainManager.get( domainId );
+            
+            String domainName = domain.getName();
+
+            //TODO Send the chars back
+            
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    @Override
+    public int FieldML_GetFieldName( int fieldId, char[] name )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+            
+            String fieldName = field.getName();
+            
+            //TODO Send the chars back
+
+            return NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetDerivedParameterIndexes( int fieldId, int[] parameterIndexes )
+    {
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            return field.getDerivedParameterIndexes( parameterIndexes );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetInputParameterIndexes( int fieldId, int[] parameterIndexes )
+    {
+        try
+        {
+            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+
+            return field.getInputParameterIndexes( parameterIndexes );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 }
