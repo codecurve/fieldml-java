@@ -1,6 +1,8 @@
 package fieldml.field.library;
 
 import fieldml.domain.Domain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.field.Field;
 import fieldml.field.FieldParameters;
 import fieldml.util.FieldmlObjectManager;
@@ -25,19 +27,35 @@ public class BilinearInterpolation
     extends Field
 {
     public BilinearInterpolation( FieldmlObjectManager<Field> manager, FieldmlObjectManager<Domain> domainManager )
+        throws FieldmlException
     {
         super( manager, "library::bilinear_lagrange", domainManager.get( "library::bilinear_interpolation_parameters" ) );
 
-        addParameterDomain( domainManager.get( "library::bilinear_interpolation_parameters" ) );
-        addParameterDomain( domainManager.get( "library::unit_square" ) );
+        addParameter( "parameters", domainManager.get( "library::bilinear_interpolation_parameters" ) );
+        addParameter( "phi", domainManager.get( "library::unit_square" ) );
     }
 
 
     @Override
-    public int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+        throws FieldmlException
     {
-        double[] nodeValues = parameters.values.get( parameterIndexes[0] ).realValues;
-        double[] xi = parameters.values.get( parameterIndexes[1] ).realValues;
+        if( parameterIndexes.length < 2 )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        Value parameter0 = parameters.values.get( parameterIndexes[0] );
+        Value parameter1 = parameters.values.get( parameterIndexes[1] );
+        
+        if( ( parameter0.realValues == null ) || ( parameter0.realValues.length < 4 ) ||
+            ( parameter1.realValues == null ) || ( parameter1.realValues.length < 2 ) ||
+            ( value.realValues == null ) || ( value.realValues.length < 1 ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        
+        double[] nodeValues = parameter0.realValues;
+        double[] xi = parameter1.realValues;
 
         double phi1 = ( 1 - xi[0] ) * ( 1 - xi[1] );
         double phi2 = xi[0] * ( 1 - xi[1] );
@@ -46,7 +64,5 @@ public class BilinearInterpolation
 
         value.realValues[0] = ( phi1 * nodeValues[0] ) + ( phi2 * nodeValues[1] ) + ( phi3 * nodeValues[2] )
             + ( phi4 * nodeValues[3] );
-
-        return 0;
     }
 }

@@ -140,7 +140,7 @@ public class FieldmlSaxHandler
                 // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
                 int[] values = getValues( characters.toString() );
                 
-                fieldml.FieldML_AddDiscreteDomainComponent( currentId, currentName, 0, values.length, values ); 
+                fieldml.FieldML_AddDiscreteDomainComponent( currentId, currentName, values, values.length ); 
             }
         }
     }

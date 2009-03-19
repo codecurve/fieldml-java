@@ -1,13 +1,19 @@
 package fieldml.exception;
 
-public class FieldmlException
+
+public abstract class FieldmlException
     extends Exception
 {
 
-	private static final long serialVersionUID = 8276143238514044036L;
+    private static final long serialVersionUID = 8276143238514044036L;
 
-	public FieldmlException( String message )
+    public final int errorCode;
+
+
+    public FieldmlException( String message, int errorCode )
     {
         super( message );
+
+        this.errorCode = errorCode;
     }
 }

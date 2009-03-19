@@ -1,6 +1,8 @@
 package fieldml.field;
 
 import fieldml.domain.ContinuousDomain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.field.component.RealComponent;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -20,34 +22,29 @@ public class ComputedRealField
     }
 
 
-    public void importComponent( String componentName, ComputedRealField field, int componentId )
+    // Specifying an arbitrarily nested composition of binary operators on
+    // domain, constant and/or imported arguments seems non-trivial. Perhaps
+    // passing an array of argument specifiers, andan array of operator
+    // specifiers, and applying an RPN-style evaluation algorithm might work.
+    public void setComponentEvaluation( String componentName )
+        throws FieldmlException
     {
-        int index = getComponentIndex( componentName );
-
-        components[index] = field.components[componentId];
-    }
-
-
-    // Specifying an arbitrarily nested composition of binary operators on domain, constant and/or
-    // imported arguments seems non-trivial. Perhaps passing an array of argument specifiers, and
-    // an array of operator specifiers, and applying an RPN-style evaluation algorithm might work.
-    public int setComponentEvaluation( String componentName )
-    {
-        // ERROR feature not supported
-        return -1;
+        throw new BadFieldmlParameterException();
     }
 
 
     @Override
-    int evaluateComponents( FieldParameters parameters, Value value )
+    void evaluateComponents( FieldParameters parameters, Value value )
+        throws FieldmlException
     {
-        // Auditing parameter and value correctness can be done when parsing input or processing
-        // FieldML API calls, and therefore need not be done here.
+        if( ( value.realValues == null ) || ( value.realValues.length < getComponentCount() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
         for( int i = 0; i < getComponentCount(); i++ )
         {
             value.realValues[i] = components[i].evaluate( parameters );
         }
-
-        return 0;
     }
 }

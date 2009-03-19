@@ -1,6 +1,8 @@
 package fieldml.field;
 
 import fieldml.domain.Domain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 
 public abstract class MappedField
@@ -12,21 +14,45 @@ public abstract class MappedField
     public MappedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
     {
         super( manager, name, valueDomain );
+        
+        keyComponentIndex = -1;
     }
 
 
-    public int setMappingParameterDomain( Domain domain, int componentIndex )
+    public void setMappingParameterDomain( Domain domain, int componentIndex )
+        throws FieldmlException
     {
-        if( getParameterCount() != 0 )
+        if( getInputParameterCount() != 0 )
         {
-            // ERROR Parameter domain is already set.
-            return -1;
+            //We could allow the user to just change the parameter domain.
+            throw new BadFieldmlParameterException();
         }
 
-        addParameterDomain( domain );
+        addParameter( "mapping parameter", domain );
 
         keyComponentIndex = componentIndex;
+    }
+
+
+    public int getMappingParameterComponentIndex()
+        throws FieldmlException
+    {
+        if( keyComponentIndex < 0 )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        return keyComponentIndex;
+    }
+
+
+    public Domain getMappingParameterDomain()
+        throws FieldmlException
+    {
+        if( getInputParameterCount() == 0 )
+        {
+            throw new BadFieldmlParameterException();
+        }
         
-        return 0;
+        return getInputParameterDomain( 0 );
     }
 }

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import fieldml.domain.Domain;
+import fieldml.exception.BadFieldmlParameterException;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
@@ -11,9 +13,15 @@ public abstract class ComputedField
     extends Field
 {
     /**
+     * This does indeed shadow Field.parameterNames, but ComputedField
+     * parameters are indexed differently. This
+     */
+    private final ArrayList<String> derivedParameterNames;
+
+    /**
      * Fields used to evaluate derived parameters.
      */
-    private final ArrayList<Field> parameterEvaluationFields;
+    private final ArrayList<Field> localParameterEvaluationFields;
 
     /**
      * parameter indexes required for evaluating the fields used for derived
@@ -23,82 +31,212 @@ public abstract class ComputedField
      * the fieldParameters object to evaluate all derived parameters belonging
      * to this field.
      */
-    private final ArrayList<int[]> parameterEvaluationIndexes;
+    private final ArrayList<int[]> localParameterEvaluationIndexes;
 
     /**
      * The cache used to store the values of all this fields parameters, and
      * thence to evaluate its components.
      */
-    private final FieldParameters fieldParameters;
+    private final FieldParameters localFieldParameters;
 
 
     public ComputedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
     {
         super( manager, name, valueDomain );
 
-        parameterEvaluationFields = new ArrayList<Field>();
-        parameterEvaluationIndexes = new ArrayList<int[]>();
+        derivedParameterNames = new ArrayList<String>();
+        localParameterEvaluationFields = new ArrayList<Field>();
+        localParameterEvaluationIndexes = new ArrayList<int[]>();
 
-        fieldParameters = new FieldParameters();
+        localFieldParameters = new FieldParameters();
     }
 
 
-    public int addInputParameter( Domain domain )
+    public void addInputParameter( String parameterName, Domain domain )
+        throws FieldmlException
     {
-        addParameterDomain( domain );
-
-        fieldParameters.addDomain( domain );
-        parameterEvaluationFields.add( null );
-        parameterEvaluationIndexes.add( null );
-
-        return 0;
-    }
-
-
-    public int addDerivedParameter( Field parameterField, int[] parameterIndexes )
-    {
-        for( int i = 0; i < parameterIndexes.length; i++ )
+        // To keep parameter indexes consistent between Field.Foo calls and
+        // ComputedField.Foo calls, we need to ensure that input parameters
+        // always occur before derived parameters.
+        if( derivedParameterNames.size() > 0 )
         {
-            if( parameterIndexes[i] >= fieldParameters.count )
+            throw new BadFieldmlParameterException();
+        }
+
+        addParameter( parameterName, domain );
+
+        derivedParameterNames.add( null ); // Hack to keep all indexes
+                                           // consistent.
+        localFieldParameters.addDomain( domain );
+        localParameterEvaluationFields.add( null );
+        localParameterEvaluationIndexes.add( null );
+    }
+
+
+    public void addDerivedParameter( String parameterName, Field parameterField, int[] argumentIndexes )
+        throws FieldmlException
+    {
+        if( parameterField.getInputParameterCount() > argumentIndexes.length )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        for( int i = 0; i < parameterField.getInputParameterCount(); i++ )
+        {
+            if( argumentIndexes[i] >= localFieldParameters.count )
             {
                 // ERROR derived parameter references an unknown parameter.
                 // NOTE although a derived parameter could forward-reference a
-                // parameter, the only
-                // way to prevent circular dependancies is to insist that
-                // derived parameters only
-                // refer to already defined ones.
-                return -1;
+                // parameter, the easiest way to prevent circular dependancies
+                // is to insist that derived parameters only refer to already
+                // defined ones.
+                throw new BadFieldmlParameterException();
             }
         }
 
-        fieldParameters.addDomain( parameterField.valueDomain );
-        parameterEvaluationFields.add( parameterField );
-        parameterEvaluationIndexes.add( Arrays.copyOf( parameterIndexes, parameterIndexes.length ) );
-
-        return 0;
+        derivedParameterNames.add( parameterName );
+        localFieldParameters.addDomain( parameterField.valueDomain );
+        localParameterEvaluationFields.add( parameterField );
+        localParameterEvaluationIndexes.add( Arrays.copyOf( argumentIndexes, parameterField.getInputParameterCount() ) );
     }
 
 
-    abstract int evaluateComponents( FieldParameters parameters, Value value );
+    abstract void evaluateComponents( FieldParameters parameters, Value value )
+        throws FieldmlException;
 
 
-    public int evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+        throws FieldmlException
     {
-        for( int i = 0; i < fieldParameters.count; i++ )
+        if( getInputParameterCount() > parameterIndexes.length )
         {
-            Field parameterField = parameterEvaluationFields.get( i );
-            Value parameterValue = fieldParameters.values.get( i );
+            throw new BadFieldmlParameterException();
+        }
+
+        int inputParameterCount = 0;
+
+        for( int i = 0; i < localFieldParameters.count; i++ )
+        {
+            Field parameterField = localParameterEvaluationFields.get( i );
+            Value parameterValue = localFieldParameters.values.get( i );
 
             if( parameterField == null )
             {
-                fieldParameters.values.set( i, value );
+                localFieldParameters.values.set( i, parameters.values.get( parameterIndexes[inputParameterCount++] ) );
             }
             else
             {
-                parameterField.evaluate( parameters, parameterEvaluationIndexes.get( i ), parameterValue );
+                parameterField.evaluate( parameters, localParameterEvaluationIndexes.get( i ), parameterValue );
             }
         }
 
-        return evaluateComponents( fieldParameters, value );
+        evaluateComponents( localFieldParameters, value );
+    }
+
+
+    public int getParameterCount()
+    {
+        return localParameterEvaluationFields.size();
+    }
+
+
+    public int getDerivedParameterField( int derivedParameterIndex )
+        throws FieldmlException
+    {
+        if( ( derivedParameterIndex < 0 ) || ( derivedParameterIndex >= localParameterEvaluationFields.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        if( localParameterEvaluationFields.get( derivedParameterIndex ) == null )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        return localParameterEvaluationFields.get( derivedParameterIndex ).getId();
+    }
+
+
+    public int getDerivedParameterArguments( int derivedParameterIndex, int[] argumentIndexes )
+        throws FieldmlException
+    {
+        if( ( derivedParameterIndex < 0 ) || ( derivedParameterIndex >= localParameterEvaluationIndexes.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        if( localParameterEvaluationIndexes.get( derivedParameterIndex ) == null )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        int[] indexes = localParameterEvaluationIndexes.get( derivedParameterIndex );
+
+        if( argumentIndexes.length < indexes.length )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        System.arraycopy( indexes, 0, argumentIndexes, 0, indexes.length );
+
+        return indexes.length;
+    }
+
+
+    public int getDerivedParameterIndexes( int[] parameterIndexes )
+        throws FieldmlException
+    {
+        if( parameterIndexes.length < localParameterEvaluationFields.size() )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        int i = 0;
+        for( int index = 0; index < localParameterEvaluationFields.size(); index++ )
+        {
+            if( localParameterEvaluationFields.get( index ) != null )
+            {
+                parameterIndexes[i++] = index;
+            }
+        }
+
+        return i;
+    }
+
+
+    public int getInputParameterIndexes( int[] parameterIndexes )
+        throws FieldmlException
+    {
+        if( parameterIndexes.length < localParameterEvaluationFields.size() )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        int i = 0;
+        for( int index = 0; index < localParameterEvaluationFields.size(); index++ )
+        {
+            if( localParameterEvaluationFields.get( index ) == null )
+            {
+                parameterIndexes[i++] = index;
+            }
+        }
+
+        return i;
+    }
+
+
+    public String getParameterName( int parameterIndex )
+        throws FieldmlException
+    {
+        if( ( parameterIndex < 0 ) || ( parameterIndex >= localParameterEvaluationFields.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        
+        if( derivedParameterNames.get( parameterIndex ) != null )
+        {
+            return derivedParameterNames.get( parameterIndex );
+        }
+
+        // Not a derived parameter, must be an input parameter.
+        return super.getParameterName( parameterIndex );
     }
 }
