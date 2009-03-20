@@ -10,7 +10,7 @@ import fieldml.value.Value;
 /**
  * IndexField defines a non-composite index-valued field. Index-valued fields
  * are separate from integer/real valued fields, as few (if any) mathematical
- * operations on them make sense. It would also be incorrent to interpret such
+ * operations on them make sense. It would also be incorrect to interpret such
  * fields as representing even dimensionless values such as radians or
  * temperature. Typically, an IndexField's domain is a single-component instance
  * of DiscreteDomain, and serves as an index into another field.
