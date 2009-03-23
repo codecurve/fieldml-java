@@ -1,4 +1,4 @@
-package fieldml;
+package fieldml.util;
 
 import java.io.FileReader;
 
@@ -7,6 +7,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
+
+import fieldml.FieldML;
+import fieldml.implementation.FieldMLJava;
 
 public class FieldmlSaxHandler
     extends DefaultHandler
