@@ -1,9 +1,10 @@
-package fieldml;
+package fieldml.implementation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import fieldml.FieldML;
 import fieldml.domain.ContinuousDomain;
 import fieldml.domain.DiscreteDomain;
 import fieldml.domain.Domain;
@@ -38,7 +39,7 @@ public class FieldMLJava
     private final int[] initialParameterIndexes;
 
 
-    FieldMLJava()
+    public FieldMLJava()
     {
         domainManager = new FieldmlObjectManager<Domain>();
         fieldManager = new FieldmlObjectManager<Field>();
