@@ -21,12 +21,6 @@ import fieldml.field.library.BilinearLagrange;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
-/**
- * In some far-off future, these could all be JNI calls to a FieldML library
- * written in C/C++. Because the API is to be called from Fortran as well, only
- * primitive types can be used as parameters.
- * 
- */
 public class FieldMLJava
     implements FieldML
 {
@@ -254,7 +248,7 @@ public class FieldMLJava
         {
             MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
 
-            Domain domain = domainManager.get( domainId );
+            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
 
             field.setMappingParameterDomain( domain, componentIndex );
 
@@ -275,9 +269,7 @@ public class FieldMLJava
 
             Domain domain = domainManager.get( domainId );
 
-            field.addInputParameter( parameterName, domain );
-
-            return NO_ERROR;
+            return field.addInputParameter( parameterName, domain );
         }
         catch( FieldmlException e )
         {
@@ -286,17 +278,15 @@ public class FieldMLJava
     }
 
 
-    public int FieldML_AddDerivedParameter( int fieldId, String parameterName, int mappingFieldId, int[] argumentIndexes )
+    public int FieldML_AddDerivedParameter( int fieldId, String parameterName, int parameterFieldId, int[] argumentIndexes )
     {
         try
         {
             ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
 
-            Field parameterField = fieldManager.get( mappingFieldId );
+            Field parameterField = fieldManager.get( parameterFieldId );
 
-            field.addDerivedParameter( parameterName, parameterField, argumentIndexes );
-
-            return NO_ERROR;
+            return field.addDerivedParameter( parameterName, parameterField, argumentIndexes );
         }
         catch( FieldmlException e )
         {
@@ -540,9 +530,7 @@ public class FieldMLJava
         {
             DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
 
-            domain.getComponentValues( componentIndex, values );
-
-            return NO_ERROR;
+            return domain.getComponentValues( componentIndex, values );
         }
         catch( FieldmlException e )
         {
@@ -591,7 +579,7 @@ public class FieldMLJava
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+            Field field = fieldManager.get( fieldId );
 
             return field.getParameterCount();
         }
@@ -700,7 +688,6 @@ public class FieldMLJava
     }
 
 
-    @Override
     public int FieldML_GetDomainName( int domainId, char[] name )
     {
         try
@@ -720,7 +707,6 @@ public class FieldMLJava
     }
 
 
-    @Override
     public int FieldML_GetFieldName( int fieldId, char[] name )
     {
         try
@@ -738,30 +724,16 @@ public class FieldMLJava
             return e.errorCode;
         }
     }
+    
 
-
-    public int FieldML_GetDerivedParameterIndexes( int fieldId, int[] parameterIndexes )
+    public int FieldML_GetValueDomain( int fieldId )
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
-
-            return field.getDerivedParameterIndexes( parameterIndexes );
-        }
-        catch( FieldmlException e )
-        {
-            return e.errorCode;
-        }
-    }
-
-
-    public int FieldML_GetInputParameterIndexes( int fieldId, int[] parameterIndexes )
-    {
-        try
-        {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
-
-            return field.getInputParameterIndexes( parameterIndexes );
+            Field field = fieldManager.get( fieldId );
+            
+            Domain domain = field.getValueDomain();
+            return domain.getId();
         }
         catch( FieldmlException e )
         {

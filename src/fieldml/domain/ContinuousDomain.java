@@ -39,6 +39,8 @@ public class ContinuousDomain
         throws FieldmlException
     {
         super.addComponent( componentName );
+        
+        //TODO check that min is strictly(?) less than max.
 
         if( Double.isNaN( min ) || Double.isNaN( max ) )
         {

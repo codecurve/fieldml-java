@@ -28,9 +28,14 @@ public class DiscreteDomain
         {
             throw new BadFieldmlParameterException();
         }
+        if( valueCount < 1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
 
         super.addComponent( componentName );
 
+        //TODO Check that each value is unique.
         componentValues.add( Arrays.copyOfRange( values, 0, valueCount - 1 ) );
     }
 
@@ -47,7 +52,7 @@ public class DiscreteDomain
     }
 
 
-    public void getComponentValues( int componentIndex, int[] values )
+    public int getComponentValues( int componentIndex, int[] values )
         throws FieldmlException
     {
         if( ( componentIndex < 0 ) || ( componentIndex >= componentValues.size() ) )
@@ -63,5 +68,7 @@ public class DiscreteDomain
         }
 
         System.arraycopy( sourceValues, 0, values, 0, sourceValues.length );
+        
+        return sourceValues.length;
     }
 }

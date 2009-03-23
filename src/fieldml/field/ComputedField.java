@@ -52,7 +52,7 @@ public abstract class ComputedField
     }
 
 
-    public void addInputParameter( String parameterName, Domain domain )
+    public int addInputParameter( String parameterName, Domain domain )
         throws FieldmlException
     {
         // To keep parameter indexes consistent between Field.Foo calls and
@@ -70,10 +70,12 @@ public abstract class ComputedField
         localFieldParameters.addDomain( domain );
         localParameterEvaluationFields.add( null );
         localParameterEvaluationIndexes.add( null );
+        
+        return localParameterEvaluationFields.size();
     }
 
 
-    public void addDerivedParameter( String parameterName, Field parameterField, int[] argumentIndexes )
+    public int addDerivedParameter( String parameterName, Field parameterField, int[] argumentIndexes )
         throws FieldmlException
     {
         if( parameterField.getInputParameterCount() > argumentIndexes.length )
@@ -98,6 +100,8 @@ public abstract class ComputedField
         localFieldParameters.addDomain( parameterField.valueDomain );
         localParameterEvaluationFields.add( parameterField );
         localParameterEvaluationIndexes.add( Arrays.copyOf( argumentIndexes, parameterField.getInputParameterCount() ) );
+        
+        return localParameterEvaluationFields.size();
     }
 
 
@@ -178,48 +182,6 @@ public abstract class ComputedField
         System.arraycopy( indexes, 0, argumentIndexes, 0, indexes.length );
 
         return indexes.length;
-    }
-
-
-    public int getDerivedParameterIndexes( int[] parameterIndexes )
-        throws FieldmlException
-    {
-        if( parameterIndexes.length < localParameterEvaluationFields.size() )
-        {
-            throw new BadFieldmlParameterException();
-        }
-
-        int i = 0;
-        for( int index = 0; index < localParameterEvaluationFields.size(); index++ )
-        {
-            if( localParameterEvaluationFields.get( index ) != null )
-            {
-                parameterIndexes[i++] = index;
-            }
-        }
-
-        return i;
-    }
-
-
-    public int getInputParameterIndexes( int[] parameterIndexes )
-        throws FieldmlException
-    {
-        if( parameterIndexes.length < localParameterEvaluationFields.size() )
-        {
-            throw new BadFieldmlParameterException();
-        }
-
-        int i = 0;
-        for( int index = 0; index < localParameterEvaluationFields.size(); index++ )
-        {
-            if( localParameterEvaluationFields.get( index ) == null )
-            {
-                parameterIndexes[i++] = index;
-            }
-        }
-
-        return i;
     }
 
 

@@ -145,4 +145,10 @@ public abstract class Field
 
         return parameterNames.get( parameterIndex );
     }
+
+
+    public int getParameterCount()
+    {
+        return getInputParameterCount();
+    }
 }
