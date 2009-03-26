@@ -15,6 +15,7 @@ public class ComputedRealField
 
 
     public ComputedRealField( FieldmlObjectManager<Field> manager, ContinuousDomain valueDomain, String name )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 

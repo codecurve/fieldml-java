@@ -30,6 +30,7 @@ public abstract class Domain
 
 
     public Domain( FieldmlObjectManager<Domain> manager, String name )
+        throws FieldmlException
     {
         this.name = name;
 

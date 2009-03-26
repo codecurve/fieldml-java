@@ -121,15 +121,19 @@
     <derived_parameter id="element_y" field="element.y_values">
       <parameter id="element" />
     </derived_parameter>
-
-    <import_component id="x" field="library::bilinear_interpolation" component="value">
-      <parameter id="element_x" />
+    
+    <derived_parameter id="bilinear_lagrange" field="library::bilinear_lagrange">
       <parameter id="xi" />
+    </derived_parameter>
+
+    <import_component id="x" field="library::bilinear_dot_product" component="value">
+      <parameter id="element_x" />
+      <parameter id="bilinear_lagrange" />
     </import_component>
 
-    <import_component id="y" field="library::bilinear_interpolation" component="value">
+    <import_component id="y" field="library::bilinear_dot_product" component="value">
       <parameter id="element_y" />
-      <parameter id="xi" />
+      <parameter id="bilinear_lagrange" />
     </import_component>
 
   </field>

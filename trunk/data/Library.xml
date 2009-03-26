@@ -75,4 +75,17 @@
       </dot_product>
     </evaluate_component>
   </field>
+  
+  <field id="library::bilinear_dot_product" value_domain="library::infinite_line">
+    <parameter id="parameter_vector" domain="library::bilinear_interpolation_parameters" />
+    <parameter id="phi_vector" domain="library::bilinear_interpolation_parameters" />
+    
+    <evaluate_component id="value">
+      <dot_product>
+        <parameter_vector id="parameter_vector" />
+        <parameter_vector id="phi_vector" />
+      </dot_product>
+    </evaluate_component>
+  </field>
+    
 </fieldml>

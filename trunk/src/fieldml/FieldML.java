@@ -149,6 +149,11 @@ public interface FieldML
     public int FieldML_CreateField( String name, int valueDomainId );
     
     /**
+     * Return the field id for the given field (if it exists) or an error code otherwise.
+     */
+    public int FieldML_GetFieldId( String fieldName );
+
+    /**
      * Copy the name of the given field into the given buffer.
      * 
      * NOTE: String-copying API calls do not currently work.

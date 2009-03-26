@@ -18,6 +18,7 @@ public class MappedRealField
 
 
     public MappedRealField( FieldmlObjectManager<Field> manager, String name, ContinuousDomain valueDomain )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 

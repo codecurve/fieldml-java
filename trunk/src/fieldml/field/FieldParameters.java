@@ -3,6 +3,7 @@ package fieldml.field;
 import java.util.ArrayList;
 
 import fieldml.domain.Domain;
+import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -16,12 +17,11 @@ public class FieldParameters
 {
     public final ArrayList<Value> values;
     
-    public int count;
-
     private final int id;
 
 
     public FieldParameters( FieldmlObjectManager<FieldParameters> manager, ArrayList<Domain> domains )
+        throws FieldmlException
     {
         values = new ArrayList<Value>();
 

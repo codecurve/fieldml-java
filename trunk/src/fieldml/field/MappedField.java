@@ -13,6 +13,7 @@ public abstract class MappedField
 
 
     public MappedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 
