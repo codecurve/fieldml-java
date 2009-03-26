@@ -20,6 +20,7 @@ import fieldml.field.MappedRealField;
 import fieldml.field.library.BilinearInterpolation;
 import fieldml.field.library.BilinearLagrange;
 import fieldml.util.FieldmlObjectManager;
+import fieldml.util.general.StringUtils;
 import fieldml.value.Value;
 
 public class FieldMLJava
@@ -585,9 +586,10 @@ public class FieldMLJava
             // TODO We need a better way to return strings.
             Domain domain = domainManager.get( domainId );
 
-            String nameString = domain.getComponentName( componentIndex );
+            String componentName = domain.getComponentName( componentIndex );
 
-            // TODO Send the chars back
+            StringUtils.stringToChars(name, componentName);
+
 
             return NO_ERROR;
         }
@@ -654,7 +656,7 @@ public class FieldMLJava
 
             String parameterName = field.getParameterName( parameterIndex );
 
-            // TODO Send the chars back
+            StringUtils.stringToChars(name, parameterName);
 
             return NO_ERROR;
         }
@@ -720,7 +722,7 @@ public class FieldMLJava
 
             String domainName = domain.getName();
 
-            // TODO Send the chars back
+            StringUtils.stringToChars(name, domainName);
 
             return NO_ERROR;
         }
@@ -739,7 +741,7 @@ public class FieldMLJava
 
             String fieldName = field.getName();
 
-            // TODO Send the chars back
+            StringUtils.stringToChars(name, fieldName);
 
             return NO_ERROR;
         }
