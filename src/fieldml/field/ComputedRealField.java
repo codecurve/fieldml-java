@@ -25,7 +25,7 @@ public class ComputedRealField
 
     // Specifying an arbitrarily nested composition of binary operators on
     // domain, constant and/or imported arguments seems non-trivial. Perhaps
-    // passing an array of argument specifiers, andan array of operator
+    // passing an array of argument specifiers, and an array of operator
     // specifiers, and applying an RPN-style evaluation algorithm might work.
     public void setComponentEvaluation( String componentName )
         throws FieldmlException
