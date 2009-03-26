@@ -3,6 +3,7 @@ package junit;
 import junit.framework.TestCase;
 import fieldml.FieldML;
 import fieldml.implementation.FieldMLJava;
+import fieldml.util.general.StringUtils;
 
 public class FieldMLJavaFieldTest
     extends TestCase
@@ -412,5 +413,39 @@ public class FieldMLJavaFieldTest
         {
             assertEquals( iValues[i], testIValues[i] );
         }
-}
+    }
+    
+    
+    public void testFieldML_GetDomainName()
+    {
+    	//TODO: Tests for fieldNames, parameterNames and DomainComponentNames
+        int length = 5;
+		char[] name = new char[length];
+		fieldml.FieldML_GetDomainName(discreteDomainId, name );
+		int expectedLength = Math.min(name.length, testDomainName1.length());
+		int actualLength = getLengthTillZeroChar(name);
+		assertEquals(expectedLength, actualLength );
+		String actualStringTillZeroChar = new String(name).substring(0,actualLength);
+		assertEquals(testDomainName1.substring(0, expectedLength), actualStringTillZeroChar);
+
+        length = 50;
+		name = new char[length];
+		StringUtils.stringToChars(name, "123456789a123456789b123456789c123456789d");
+		fieldml.FieldML_GetDomainName(discreteDomainId, name );
+		expectedLength = Math.min(name.length, testDomainName1.length());
+		actualLength = getLengthTillZeroChar(name);
+		assertEquals(expectedLength, actualLength );
+		actualStringTillZeroChar = new String(name).substring(0,actualLength);
+		assertEquals(testDomainName1.substring(0, expectedLength), actualStringTillZeroChar);
+    }
+
+
+	private int getLengthTillZeroChar(char[] name) {
+		String actualStringPadded = new String(name);
+		int actualLength = actualStringPadded.indexOf(0);
+		if (actualLength < 0) {
+			actualLength=actualStringPadded.length();
+		}
+		return actualLength;
+	}
 }
