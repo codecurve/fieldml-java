@@ -38,9 +38,12 @@ public abstract class ComputedField
      * thence to evaluate its components.
      */
     private final FieldParameters localFieldParameters;
+    
+    private boolean hasDerivedParameters;
 
 
     public ComputedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 
@@ -58,20 +61,20 @@ public abstract class ComputedField
         // To keep parameter indexes consistent between Field.Foo calls and
         // ComputedField.Foo calls, we need to ensure that input parameters
         // always occur before derived parameters.
-        if( derivedParameterNames.size() > 0 )
+        if( hasDerivedParameters )
         {
             throw new BadFieldmlParameterException();
         }
 
         addParameter( parameterName, domain );
 
-        derivedParameterNames.add( null ); // Hack to keep all indexes
-                                           // consistent.
+        // Keep all indexes consistent.
+        derivedParameterNames.add( null );
         localFieldParameters.addDomain( domain );
         localParameterEvaluationFields.add( null );
         localParameterEvaluationIndexes.add( null );
-        
-        return localParameterEvaluationFields.size();
+
+        return localParameterEvaluationFields.size() - 1;
     }
 
 
@@ -82,10 +85,15 @@ public abstract class ComputedField
         {
             throw new BadFieldmlParameterException();
         }
+        
+        if( getParameterIndex( parameterName ) > -1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
 
         for( int i = 0; i < parameterField.getInputParameterCount(); i++ )
         {
-            if( argumentIndexes[i] >= localFieldParameters.count )
+            if( argumentIndexes[i] >= localFieldParameters.values.size() )
             {
                 // ERROR derived parameter references an unknown parameter.
                 // NOTE although a derived parameter could forward-reference a
@@ -94,14 +102,23 @@ public abstract class ComputedField
                 // defined ones.
                 throw new BadFieldmlParameterException();
             }
+            Domain parameterDomain = localFieldParameters.values.get( argumentIndexes[i] ).domain;
+
+            if( parameterDomain.getId() != parameterField.getInputParameterDomain( i ).getId() )
+            {
+                // Domain mismatch
+                throw new BadFieldmlParameterException();
+            }
         }
 
+        hasDerivedParameters = true;
+        
         derivedParameterNames.add( parameterName );
         localFieldParameters.addDomain( parameterField.valueDomain );
         localParameterEvaluationFields.add( parameterField );
         localParameterEvaluationIndexes.add( Arrays.copyOf( argumentIndexes, parameterField.getInputParameterCount() ) );
-        
-        return localParameterEvaluationFields.size();
+
+        return localParameterEvaluationFields.size() - 1;
     }
 
 
@@ -119,7 +136,7 @@ public abstract class ComputedField
 
         int inputParameterCount = 0;
 
-        for( int i = 0; i < localFieldParameters.count; i++ )
+        for( int i = 0; i < localFieldParameters.values.size(); i++ )
         {
             Field parameterField = localParameterEvaluationFields.get( i );
             Value parameterValue = localFieldParameters.values.get( i );
@@ -192,7 +209,7 @@ public abstract class ComputedField
         {
             throw new BadFieldmlParameterException();
         }
-        
+
         if( derivedParameterNames.get( parameterIndex ) != null )
         {
             return derivedParameterNames.get( parameterIndex );
@@ -200,5 +217,18 @@ public abstract class ComputedField
 
         // Not a derived parameter, must be an input parameter.
         return super.getParameterName( parameterIndex );
+    }
+    
+    
+    public int getParameterIndex( String name )
+    {
+        int index = super.getParameterIndex( name );
+        
+        if( index < 0 )
+        {
+            index = derivedParameterNames.indexOf( name );
+        }
+        
+        return index;
     }
 }

@@ -57,17 +57,31 @@ public class FieldMLJava
 
     public int FieldML_CreateContinuousDomain( String name )
     {
-        Domain domain = new ContinuousDomain( domainManager, name );
+        try
+        {
+            Domain domain = new ContinuousDomain( domainManager, name );
 
-        return domain.getId();
+            return domain.getId();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
     public int FieldML_CreateDiscreteDomain( String name )
     {
-        Domain domain = new DiscreteDomain( domainManager, name );
+        try
+        {
+            Domain domain = new DiscreteDomain( domainManager, name );
 
-        return domain.getId();
+            return domain.getId();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
     }
 
 
@@ -90,9 +104,7 @@ public class FieldMLJava
         {
             ContinuousDomain domain = domainManager.getByClass( domainId, ContinuousDomain.class );
 
-            domain.addComponent( componentName, min, max );
-
-            return domain.getComponentCount();
+            return domain.addComponent( componentName, min, max );
         }
         catch( FieldmlException e )
         {
@@ -107,9 +119,7 @@ public class FieldMLJava
         {
             DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
 
-            domain.addComponent( componentName, values, valueCount );
-
-            return domain.getComponentCount();
+            return domain.addComponent( componentName, values, valueCount );
         }
         catch( FieldmlException e )
         {
@@ -164,6 +174,19 @@ public class FieldMLJava
             {
                 return ERR_WRONG_OBJECT_TYPE;
             }
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    public int FieldML_GetFieldId( String originalFieldName )
+    {
+        try
+        {
+            return fieldManager.getId( originalFieldName );
         }
         catch( FieldmlException e )
         {
@@ -559,12 +582,12 @@ public class FieldMLJava
     {
         try
         {
-            //TODO We need a better way to return strings.
+            // TODO We need a better way to return strings.
             Domain domain = domainManager.get( domainId );
 
             String nameString = domain.getComponentName( componentIndex );
-            
-            //TODO Send the chars back
+
+            // TODO Send the chars back
 
             return NO_ERROR;
         }
@@ -613,7 +636,7 @@ public class FieldMLJava
             Field field = fieldManager.get( fieldId );
 
             Domain domain = field.getInputParameterDomain( parameterIndex );
-            
+
             return domain.getId();
         }
         catch( FieldmlException e )
@@ -631,8 +654,8 @@ public class FieldMLJava
 
             String parameterName = field.getParameterName( parameterIndex );
 
-            //TODO Send the chars back
-            
+            // TODO Send the chars back
+
             return NO_ERROR;
         }
         catch( FieldmlException e )
@@ -664,7 +687,7 @@ public class FieldMLJava
             MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
 
             Domain domain = field.getMappingParameterDomain();
-            
+
             return domain.getId();
         }
         catch( FieldmlException e )
@@ -694,11 +717,11 @@ public class FieldMLJava
         try
         {
             Domain domain = domainManager.get( domainId );
-            
+
             String domainName = domain.getName();
 
-            //TODO Send the chars back
-            
+            // TODO Send the chars back
+
             return NO_ERROR;
         }
         catch( FieldmlException e )
@@ -713,10 +736,10 @@ public class FieldMLJava
         try
         {
             Field field = fieldManager.get( fieldId );
-            
+
             String fieldName = field.getName();
-            
-            //TODO Send the chars back
+
+            // TODO Send the chars back
 
             return NO_ERROR;
         }
@@ -725,14 +748,14 @@ public class FieldMLJava
             return e.errorCode;
         }
     }
-    
+
 
     public int FieldML_GetValueDomain( int fieldId )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
-            
+
             Domain domain = field.getValueDomain();
             return domain.getId();
         }

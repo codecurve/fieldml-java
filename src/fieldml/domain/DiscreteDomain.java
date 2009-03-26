@@ -15,13 +15,14 @@ public class DiscreteDomain
 
 
     public DiscreteDomain( FieldmlObjectManager<Domain> manager, String name )
+        throws FieldmlException
     {
         super( manager, name );
 
     }
 
 
-    public void addComponent( String componentName, int[] values, int valueCount )
+    public int addComponent( String componentName, int[] values, int valueCount )
         throws FieldmlException
     {
         if( values.length < valueCount )
@@ -35,8 +36,10 @@ public class DiscreteDomain
 
         super.addComponent( componentName );
 
-        //TODO Check that each value is unique.
-        componentValues.add( Arrays.copyOfRange( values, 0, valueCount - 1 ) );
+        // TODO Check that each value is unique.
+        componentValues.add( Arrays.copyOfRange( values, 0, valueCount ) );
+        
+        return getComponentCount() - 1;
     }
 
 
@@ -68,7 +71,7 @@ public class DiscreteDomain
         }
 
         System.arraycopy( sourceValues, 0, values, 0, sourceValues.length );
-        
+
         return sourceValues.length;
     }
 }

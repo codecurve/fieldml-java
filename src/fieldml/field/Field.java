@@ -34,14 +34,16 @@ public abstract class Field
      * same as the domains of fieldParameters
      */
     private final ArrayList<Domain> parameterDomains;
-    
+
     /**
-     * This is essentially a list of debug symbols, and is not actually referenced during evaulation.
+     * This is essentially a list of debug symbols, and is not actually
+     * referenced during evaulation.
      */
     private final ArrayList<String> parameterNames;
 
 
     public Field( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
+        throws FieldmlException
     {
         this.name = name;
         this.valueDomain = valueDomain;
@@ -96,7 +98,12 @@ public abstract class Field
 
 
     protected void addParameter( String parameterName, Domain domain )
+        throws FieldmlException
     {
+        if( parameterNames.contains( parameterName ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
         parameterDomains.add( domain );
         parameterNames.add( parameterName );
     }
@@ -150,5 +157,11 @@ public abstract class Field
     public int getParameterCount()
     {
         return getInputParameterCount();
+    }
+    
+    
+    public int getParameterIndex( String name )
+    {
+        return parameterNames.indexOf( name );
     }
 }

@@ -27,6 +27,7 @@ public class ComputedIndexField
 
 
     public ComputedIndexField( FieldmlObjectManager<Field> manager, DiscreteDomain valueDomain, String name )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 

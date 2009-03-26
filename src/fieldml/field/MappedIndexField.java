@@ -19,6 +19,7 @@ public class MappedIndexField
 
 
     public MappedIndexField( FieldmlObjectManager<Field> manager, String name, DiscreteDomain valueDomain )
+        throws FieldmlException
     {
         super( manager, name, valueDomain );
 

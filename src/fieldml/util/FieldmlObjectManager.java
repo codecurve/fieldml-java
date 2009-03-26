@@ -3,6 +3,7 @@ package fieldml.util;
 import java.util.HashMap;
 import java.util.Map;
 
+import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.exception.NoSuchFieldmlObjectException;
 import fieldml.exception.WrongFieldmlObjectTypeException;
@@ -66,7 +67,13 @@ public class FieldmlObjectManager<T extends FieldmlObject>
 
 
     public int add( T object )
+        throws FieldmlException
     {
+        if( objectIds.get( object.getName() ) != null )
+        {
+            //TODO perhaps add a "ObjectAlreadyExists" exception
+            throw new BadFieldmlParameterException();
+        }
         int id = generateNewUniqueId();
         objects.put( id, object );
         objectIds.put( object.getName(), id );

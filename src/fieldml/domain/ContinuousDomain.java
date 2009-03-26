@@ -30,12 +30,13 @@ public class ContinuousDomain
 
 
     public ContinuousDomain( FieldmlObjectManager<Domain> manager, String name )
+        throws FieldmlException
     {
         super( manager, name );
     }
 
 
-    public void addComponent( String componentName, double min, double max )
+    public int addComponent( String componentName, double min, double max )
         throws FieldmlException
     {
         super.addComponent( componentName );
@@ -52,6 +53,8 @@ public class ContinuousDomain
         extrema[1] = max;
 
         componentExtrema.add( extrema );
+        
+        return getComponentCount() - 1;
     }
 
 
