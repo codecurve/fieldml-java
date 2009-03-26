@@ -51,8 +51,6 @@ public interface FieldML
     /**
      * Copy the name of the given domain into the given buffer.
      * 
-     * NOTE: String-copying API calls do not currently work.
-     * 
      * ERR_NO_SUCH_OBJECT if there is no domain with the given id.
      */
     public int FieldML_GetDomainName( int domainId, char[] name );
@@ -92,8 +90,6 @@ public interface FieldML
     /**
      * Copy the name of the given domain component into the given buffer.
      * The index must non-negative, and less than the given domain's component count.
-     * 
-     * NOTE: String-copying API calls do not currently work.
      * 
      * ERR_NO_SUCH_OBJECT if there is no domain with the given id.
      * ERR_BAD_PARAMETER if there is no domain component with the given index.
@@ -155,8 +151,6 @@ public interface FieldML
 
     /**
      * Copy the name of the given field into the given buffer.
-     * 
-     * NOTE: String-copying API calls do not currently work.
      * 
      * ERR_NO_SUCH_OBJECT if there is no field with the given id.
      */
@@ -380,8 +374,6 @@ public interface FieldML
     
     /**
      * Return the name of the given parameter, input or derived.
-     * 
-     * NOTE: String-copying API calls do not currently work.
      * 
      * ERR_NO_SUCH_OBJECT if there is no field with the given id.
      * ERR_BAD_PARAMETER if the parameter index is invalid.
