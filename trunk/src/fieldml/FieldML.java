@@ -1,5 +1,5 @@
 package fieldml;
-
+//TODO: Can this API be subdivided up into sub-modules?  It is already too "monolithic", and is likely to grow.
 
 /**
  * In some far-off future, these could all be JNI calls to a FieldML library written in C/C++.
