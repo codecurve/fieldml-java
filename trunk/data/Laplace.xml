@@ -27,9 +27,9 @@
     We should just induce a specially-named component index domain for each
     explicitly defined domain. 
    -->
-  <discrete_domain id="node.parameters.component_index">
-    <component id="index">
-      1 2 3 4
+  <discrete_domain id="node.parameters.component_name">
+    <component id="name">
+      x y g n
     </component>
   </discrete_domain>
 
@@ -52,7 +52,7 @@
 
   <field id="element.bilinear_parameters" value_domain="library::bilinear_interpolation_parameters">
     <parameter id="element" domain="mesh.element" />
-    <parameter id="component_index" domain="node.parameters.component_index" />
+    <parameter id="component_name" domain="node.parameters.component_name" />
     
     <derived_parameter id="nodes" field="element.nodes" >
       <parameter id="element" />
@@ -71,20 +71,20 @@
       <parameter id="nodes.node4" />
     </derived_parameter>
     
-    <assign_indexed_component id="u1" parameter="node1_parameters" index="component_index" />
-    <assign_indexed_component id="u2" parameter="node2_parameters" index="component_index" />
-    <assign_indexed_component id="u3" parameter="node3_parameters" index="component_index" />
-    <assign_indexed_component id="u4" parameter="node4_parameters" index="component_index" />
+    <assign_named_component id="u1" parameter="node1_parameters" name="component_name" />
+    <assign_named_component id="u2" parameter="node2_parameters" name="component_name" />
+    <assign_named_component id="u3" parameter="node3_parameters" name="component_name" />
+    <assign_named_component id="u4" parameter="node4_parameters" name="component_name" />
   </field>
   
   <field id="element.bilinear_interpolator" value_domain="library::infinite_line">
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
-    <parameter id="component_index" domain="node.parameters.component_index" />
+    <parameter id="component_name" domain="node.parameters.component_name" />
 
     <derived_parameter id="parameter_values" field="element.bilinear_parameters">
       <parameter id="element"/>
-      <parameter id="component_index"/>
+      <parameter id="component_name"/>
     </derived_parameter>
      
     <derived_parameter id="interpolated_value" field="library::bilinear_interpolation" />
