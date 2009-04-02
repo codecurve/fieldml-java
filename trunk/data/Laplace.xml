@@ -110,12 +110,12 @@
     <derived_parameter id="interpolated_x" parameter_field="interpolation_field">
       <parameter id="element" />
       <parameter id="xi" />
-      <literal_parameter value="1" />
+      <literal_parameter value="x" />
     </derived_parameter>
     <derived_parameter id="interpolated_y" parameter_field="interpolation_field">
       <parameter id="element" />
       <parameter id="xi" />
-      <literal_parameter value="2" />
+      <literal_parameter value="y" />
     </derived_parameter>
 
     <assign_component id="x" parameter="interpolated_x" component="value" />
@@ -134,7 +134,7 @@
     <derived_parameter id="interpolated_g" parameter_field="interpolation_field">
       <parameter id="element" />
       <parameter id="xi" />
-      <literal_parameter value="1" />
+      <literal_parameter value="g" />
     </derived_parameter>
 
     <assign_component id="g" parameter="interpolated_g" component="value" />
@@ -151,7 +151,7 @@
     <derived_parameter id="interpolated_n" parameter_field="interpolation_field">
       <parameter id="element" />
       <parameter id="xi" />
-      <literal_parameter value="1" />
+      <literal_parameter value="n" />
     </derived_parameter>
 
     <assign_component id="n" parameter="interpolated_n" component="value" />
