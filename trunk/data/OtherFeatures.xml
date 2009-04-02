@@ -1,0 +1,28 @@
+<fieldml>
+  
+
+  <!--
+    Mapped field reading in data from a separate file.
+      
+    NOT YET IMPLEMENTED
+    
+    The parsing application reads in data, starting at the given offset, and
+    skipping the given number of bytes between each record. Each record
+    consists of a single key of the given format, followed by a number
+    of values matching the component count of the mapped_field's value
+    domain. The key format must be an integer format, typically 8, 16 or 32
+    bits. The value format must match the domain value's base type, be it
+    floating point for reals, integer for reals or indexes, or ASCII, unicode
+    or some other format for strings.  
+
+    Little-endian and big-endian formats should be supported.
+   -->
+  <mapped_field id="mapped_field" value_domain="some_domain">
+    <!--
+      Perhaps just fold these into the mapped_field tag? 
+     -->
+    <mapping_parameter domain="mesh.element" component="id"/>
+    
+    <read_map file="filename.bin" format="raw" offset="0" padding="0" key_format="le_16bit" value_format="le_32bit"/>
+  </mapped_field>
+</fieldml>

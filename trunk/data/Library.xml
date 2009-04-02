@@ -14,10 +14,29 @@
   </continuous_domain>
 
   <continuous_domain id="library::bilinear_interpolation_parameters" value="real" >
+    <component id="u1" />
+    <component id="u2" />
+    <component id="u3" />
+    <component id="u4" />
+  </continuous_domain>
+
+  <continuous_domain id="library::bicubic_hermite_interpolation_parameters" value="real" >
     <component id="node1" />
     <component id="node2" />
     <component id="node3" />
     <component id="node4" />
+    <component id="node1dds1" />
+    <component id="node2dds1" />
+    <component id="node3dds1" />
+    <component id="node4dds1" />
+    <component id="node1dds2" />
+    <component id="node2dds2" />
+    <component id="node3dds2" />
+    <component id="node4dds2" />
+    <component id="node1d2ds1ds2" />
+    <component id="node2d2ds1ds2" />
+    <component id="node3d2ds1ds2" />
+    <component id="node4d2ds1ds2" />
   </continuous_domain>
 
   <field id="library::bilinear_lagrange" value_domain="library::bilinear_interpolation_parameters">
@@ -66,7 +85,11 @@
   
   <field id="library::bilinear_interpolation" value_domain="library::infinite_line">
     <parameter id="parameters" domain="library::bilinear_interpolation_parameters" />
-    <mapped_parameter id="phi" mapping_field="library::bilinear_lagrange" />
+    <parameter id="xi" domain="library::unit_square" />
+    
+    <derived_parameter id="phi" field="library::bilinear_lagrange">
+      <parameter id="xi" />
+    </derived_parameter>
     
     <evaluate_component id="value">
       <dot_product>

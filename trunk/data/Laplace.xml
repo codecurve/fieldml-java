@@ -16,12 +16,22 @@
     </component>
   </discrete_domain>
   
-  <continuous_domain id="node.parameters" value="real" >
+  <continuous_domain id="node.parameters">
     <component id="x" />
     <component id="y" />
     <component id="g" />
     <component id="n" />
   </continuous_domain>
+  
+  <!--
+    We should just induce a specially-named component index domain for each
+    explicitly defined domain. 
+   -->
+  <discrete_domain id="node.parameters.component_index">
+    <component id="index">
+      1 2 3 4
+    </component>
+  </discrete_domain>
 
   <discrete_domain id="mesh.element_nodes" value="index">
     <import_component id="node1" domain="mesh.node" component="id" />
@@ -29,137 +39,122 @@
     <import_component id="node3" domain="mesh.node" component="id" />
     <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
+  
+  <!--
+    Elements of a "field" type domain component must all have the same input
+    parameter and value types. 
+   -->
+  <discrete_domain id="interpolation_field" value="field">
+    <component id="interpolator" >
+      library::bilinear_interpolation  library::bicubic_hermite_interpolation
+    </component>
+  </discrete_domain>
 
-  <field id="element.x_values" value_domain="library::bilinear_interpolation_parameters">
-    <!--
-      For a single-parameter field:
-      
-      <mapped_parameter id="BAR" mapping_field="FOO" />
-      
-      is identical to
-      
-      <parameter id="TEMP" domain="FOO's parameter domain" />
-      
-      <derived_parameter id="BAR" field="FOO" parameter="TEMP" />
-      
-      note that TEMP is never referenced again.
-     -->
-    <mapped_parameter id="nodes" mapping_field="element.nodes" />
+  <field id="element.bilinear_parameters" value_domain="library::bilinear_interpolation_parameters">
+    <parameter id="element" domain="mesh.element" />
+    <parameter id="component_index" domain="node.parameters.component_index" />
     
-    <import_component field="node.parameters" component="x" >
-      <parameter id="nodes" component="node1" />
-    </import_component>
-    <import_component field="node.parameters" component="x" >
-      <parameter id="nodes" component="node2" />
-    </import_component>
-    <import_component field="node.parameters" component="x" >
-      <parameter id="nodes" component="node3" />
-    </import_component>
-    <import_component field="node.parameters" component="x" >
-      <parameter id="nodes" component="node4" />
-    </import_component>
+    <derived_parameter id="nodes" field="element.nodes" >
+      <parameter id="element" />
+    </derived_parameter>
+    
+    <derived_parameter id="node1_parameters"  field="node.parameters">
+      <parameter id="nodes.node1" />
+    </derived_parameter>
+    <derived_parameter id="node2_parameters"  field="node.parameters">
+      <parameter id="nodes.node2" />
+    </derived_parameter>
+    <derived_parameter id="node3_parameters"  field="node.parameters">
+      <parameter id="nodes.node3" />
+    </derived_parameter>
+    <derived_parameter id="node4_parameters"  field="node.parameters">
+      <parameter id="nodes.node4" />
+    </derived_parameter>
+    
+    <assign_indexed_component id="u1" parameter="node1_parameters" index="component_index" />
+    <assign_indexed_component id="u2" parameter="node2_parameters" index="component_index" />
+    <assign_indexed_component id="u3" parameter="node3_parameters" index="component_index" />
+    <assign_indexed_component id="u4" parameter="node4_parameters" index="component_index" />
   </field>
+  
+  <field id="element.bilinear_interpolator" value_domain="library::infinite_line">
+    <parameter id="element" domain="mesh.element" />
+    <parameter id="xi" domain="library::unit_square" />
+    <parameter id="component_index" domain="node.parameters.component_index" />
 
-  <field id="element.y_values" value_domain="library::bilinear_interpolation_parameters">
-    <mapped_parameter id="nodes" mapping_field="element.nodes" />
+    <derived_parameter id="parameter_values" field="element.bilinear_parameters">
+      <parameter id="element"/>
+      <parameter id="component_index"/>
+    </derived_parameter>
+     
+    <derived_parameter id="interpolated_value" field="library::bilinear_interpolation" />
     
-    <import_component field="node.parameters" component="y" >
-      <parameter id="nodes" component="node1" />
-    </import_component>
-    <import_component field="node.parameters" component="y" >
-      <parameter id="nodes" component="node2" />
-    </import_component>
-    <import_component field="node.parameters" component="y" >
-      <parameter id="nodes" component="node3" />
-    </import_component>
-    <import_component field="node.parameters" component="y" >
-      <parameter id="nodes" component="node4" />
-    </import_component>
-  </field>
-
-  <field id="element.g_values" value_domain="library::bilinear_interpolation_parameters">
-    <mapped_parameter id="nodes" mapping_field="element.nodes" />
-    
-    <import_component field="node.parameters" component="g" >
-      <parameter id="nodes" component="node1" />
-    </import_component>
-    <import_component field="node.parameters" component="g" >
-      <parameter id="nodes" component="node2" />
-    </import_component>
-    <import_component field="node.parameters" component="g" >
-      <parameter id="nodes" component="node3" />
-    </import_component>
-    <import_component field="node.parameters" component="g" >
-      <parameter id="nodes" component="node4" />
-    </import_component>
-  </field>
-
-  <field id="element.n_values" value_domain="library::bilinear_interpolation_parameters">
-    <mapped_parameter id="nodes" mapping_field="element.nodes" />
-    
-    <import_component field="node.parameters" component="n" >
-      <parameter id="nodes" component="node1" />
-    </import_component>
-    <import_component field="node.parameters" component="n" >
-      <parameter id="nodes" component="node2" />
-    </import_component>
-    <import_component field="node.parameters" component="n" >
-      <parameter id="nodes" component="node3" />
-    </import_component>
-    <import_component field="node.parameters" component="n" >
-      <parameter id="nodes" component="node4" />
-    </import_component>
+    <assign_component id="value" parameter="interpolated_value" component="value"/>
   </field>
 
   <field id="mesh.coordinates" value_domain="library::cartesian_2d">
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
     
-    <derived_parameter id="element_x" field="element.x_values">
-      <parameter id="element" />
-    </derived_parameter>
-    <derived_parameter id="element_y" field="element.y_values">
+    <derived_parameter id="interpolation_field" field="element.coordinate_interpolation_field">
       <parameter id="element" />
     </derived_parameter>
     
-    <derived_parameter id="bilinear_lagrange" field="library::bilinear_lagrange">
+    <!--
+      This implies that the basis functions need to be re-evaluated for each
+      dof, even though the xi is the same each time. However, we can define
+      a field-domain consisting of various co-ordinate interpolators (or
+      indeed any other kind of interpolator) that does the job in batches,
+      allowing the phi vector to be re-used.  
+     -->
+    <derived_parameter id="interpolated_x" parameter_field="interpolation_field">
+      <parameter id="element" />
       <parameter id="xi" />
+      <literal_parameter value="1" />
+    </derived_parameter>
+    <derived_parameter id="interpolated_y" parameter_field="interpolation_field">
+      <parameter id="element" />
+      <parameter id="xi" />
+      <literal_parameter value="2" />
     </derived_parameter>
 
-    <import_component id="x" field="library::bilinear_dot_product" component="value">
-      <parameter id="element_x" />
-      <parameter id="bilinear_lagrange" />
-    </import_component>
+    <assign_component id="x" parameter="interpolated_x" component="value" />
 
-    <import_component id="y" field="library::bilinear_dot_product" component="value">
-      <parameter id="element_y" />
-      <parameter id="bilinear_lagrange" />
-    </import_component>
-
+    <assign_component id="y" parameter="interpolated_y" component="value" />
   </field>
-
+  
   <field id="mesh.g" value_domain="library::infinite_line">
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
-
-    <derived_parameter id="element_g" field="element.g_values" parameter="element" />
-
-    <import_component id="value" field="library::bilinear_interpolation" component="value">
-      <parameter id="element_g" />
+    
+    <derived_parameter id="interpolation_field" field="element.g_interpolation_field">
+      <parameter id="element" />
+    </derived_parameter>
+    
+    <derived_parameter id="interpolated_g" parameter_field="interpolation_field">
+      <parameter id="element" />
       <parameter id="xi" />
-    </import_component>
+      <literal_parameter value="1" />
+    </derived_parameter>
+
+    <assign_component id="g" parameter="interpolated_g" component="value" />
   </field>
 
   <field id="mesh.n" value_domain="library::infinite_line">
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
-
-    <derived_parameter id="element_n" field="element.n_values" parameter="element" />
-
-    <import_component id="value" field="library::bilinear_interpolation" component="value">
-      <parameter id="element_n" />
+    
+    <derived_parameter id="interpolation_field" field="element.n_interpolation_field">
+      <parameter id="element" />
+    </derived_parameter>
+    
+    <derived_parameter id="interpolated_n" parameter_field="interpolation_field">
+      <parameter id="element" />
       <parameter id="xi" />
-    </import_component>
+      <literal_parameter value="1" />
+    </derived_parameter>
+
+    <assign_component id="n" parameter="interpolated_n" component="value" />
   </field>
 
   <mapped_field id="node.parameters" value_domain="node.parameters">
@@ -217,30 +212,62 @@
      -->
     <mapping_parameter domain="mesh.element" component="id"/>
     
-    <map value="3">
-        3  4  8  9
-    </map>
-    <map value="4">
-        4  5  9  10
-    </map>
-    <map value="7">
-        8  9  13  14
-    </map>
-    <map value="8">
-        9  10  14  15
-    </map>
-    <map value="11">
-        13  14  18  19
-    </map>
-    <map value="12">
-        14  15  19  20
-    </map>
-    <map value="15">
-        18  19  23  24
-    </map>
-    <map value="16">
-        19  20  24  25
-    </map>
+    <define_map>
+      <map value="3">
+          3  4  8  9
+      </map>
+      <map value="4">
+          4  5  9  10
+      </map>
+      <map value="7">
+          8  9  13  14
+      </map>
+      <map value="8">
+          9  10  14  15
+      </map>
+      <map value="11">
+          13  14  18  19
+      </map>
+      <map value="12">
+          14  15  19  20
+      </map>
+      <map value="15">
+          18  19  23  24
+      </map>
+      <map value="16">
+          19  20  24  25
+      </map>
+    </define_map>
+  </mapped_field>
+  
+  <mapped_field id="element.coordinate_interpolation_field" value_domain="interpolation_field">
+    <mapping_parameter domain="mesh.element" component="id"/>
+
+    <define_map>
+      <default>
+        library::bilinear_interpolation
+      </default>
+    </define_map>
+  </mapped_field>
+  
+  <mapped_field id="element.g_interpolation_field" value_domain="interpolation_field">
+    <mapping_parameter domain="mesh.element" component="id"/>
+
+    <define_map>
+      <default>
+        library::bilinear_interpolation
+      </default>
+    </define_map>
+  </mapped_field>
+  
+  <mapped_field id="element.n_interpolation_field" value_domain="interpolation_field">
+    <mapping_parameter domain="mesh.element" component="id"/>
+
+    <define_map>
+      <default>
+        library::bilinear_interpolation
+      </default>
+    </define_map>
   </mapped_field>
 
 </fieldml>
