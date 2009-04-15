@@ -1,6 +1,6 @@
 package fieldml.field;
 
-import fieldml.domain.DiscreteDomain;
+import fieldml.domain.DiscreteIndexDomain;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.field.component.IndexComponent;
@@ -26,7 +26,7 @@ public class ComputedIndexField
     private final IndexComponent[] components;
 
 
-    public ComputedIndexField( FieldmlObjectManager<Field> manager, DiscreteDomain valueDomain, String name )
+    public ComputedIndexField( FieldmlObjectManager<Field> manager, DiscreteIndexDomain valueDomain, String name )
         throws FieldmlException
     {
         super( manager, name, valueDomain );

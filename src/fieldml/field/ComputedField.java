@@ -3,10 +3,12 @@ package fieldml.field;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import fieldml.domain.DiscreteFieldDomain;
 import fieldml.domain.Domain;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
+import fieldml.util.general.ImmutableList;
 import fieldml.value.Value;
 
 public abstract class ComputedField
@@ -38,7 +40,7 @@ public abstract class ComputedField
      * thence to evaluate its components.
      */
     private final FieldParameters localFieldParameters;
-    
+
     private boolean hasDerivedParameters;
 
 
@@ -78,6 +80,23 @@ public abstract class ComputedField
     }
 
 
+    private boolean checkSignature( ImmutableList<Domain> signature, int[] argumentIndexes )
+    {
+        for( int i = 1; i < signature.size(); i++ )
+        {
+            Domain parameterDomain = localFieldParameters.values.get( argumentIndexes[i] ).domain;
+
+            if( parameterDomain.getId() != signature.get(i).getId() )
+            {
+                // Domain mismatch
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+
     public int addDerivedParameter( String parameterName, Field parameterField, int[] argumentIndexes )
         throws FieldmlException
     {
@@ -85,7 +104,7 @@ public abstract class ComputedField
         {
             throw new BadFieldmlParameterException();
         }
-        
+
         if( getParameterIndex( parameterName ) > -1 )
         {
             throw new BadFieldmlParameterException();
@@ -102,6 +121,57 @@ public abstract class ComputedField
                 // defined ones.
                 throw new BadFieldmlParameterException();
             }
+        }
+
+        ImmutableList<Domain> signature = getSignature();
+
+        if( !checkSignature( signature, argumentIndexes ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        hasDerivedParameters = true;
+
+        derivedParameterNames.add( parameterName );
+        localFieldParameters.addDomain( parameterField.valueDomain );
+        localParameterEvaluationFields.add( parameterField );
+        localParameterEvaluationIndexes.add( Arrays.copyOf( argumentIndexes, parameterField.getInputParameterCount() ) );
+
+        return localParameterEvaluationFields.size() - 1;
+    }
+
+
+    public int addIndirectParameter( String parameterName, int fieldComponentIndex, int fieldParameterComponentIndex, int[] argumentIndexes )
+        throws FieldmlException
+    {
+        Domain parameterDomain = localFieldParameters.values.get( fieldParameterComponentIndex ).domain;
+        
+        if(!( parameterDomain instanceof DiscreteFieldDomain ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+        
+        DiscreteFieldDomain fieldParameterDomain = (DiscreteFieldDomain)parameterDomain;
+        
+        ImmutableList<Domain> signature = fieldParameterDomain.getSignature();
+        
+        if( parameterField.getInputParameterCount() > argumentIndexes.length )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        if( getParameterIndex( parameterName ) > -1 )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        for( int i = 0; i < parameterField.getInputParameterCount(); i++ )
+        {
+            if( argumentIndexes[i] >= localFieldParameters.values.size() )
+            {
+                // ERROR derived parameter references an unknown parameter.
+                throw new BadFieldmlParameterException();
+            }
             Domain parameterDomain = localFieldParameters.values.get( argumentIndexes[i] ).domain;
 
             if( parameterDomain.getId() != parameterField.getInputParameterDomain( i ).getId() )
@@ -112,7 +182,7 @@ public abstract class ComputedField
         }
 
         hasDerivedParameters = true;
-        
+
         derivedParameterNames.add( parameterName );
         localFieldParameters.addDomain( parameterField.valueDomain );
         localParameterEvaluationFields.add( parameterField );
@@ -218,17 +288,17 @@ public abstract class ComputedField
         // Not a derived parameter, must be an input parameter.
         return super.getParameterName( parameterIndex );
     }
-    
-    
+
+
     public int getParameterIndex( String name )
     {
         int index = super.getParameterIndex( name );
-        
+
         if( index < 0 )
         {
             index = derivedParameterNames.indexOf( name );
         }
-        
+
         return index;
     }
 }

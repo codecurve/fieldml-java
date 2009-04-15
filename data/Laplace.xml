@@ -4,13 +4,13 @@
     represents the first node's output.
    -->
 
-  <discrete_domain id="mesh.element" value="index">
+  <discrete_domain id="mesh.element" type="index">
     <component id="id">
       3  4  7  8  11  12  15  16
     </component>
   </discrete_domain>
   
-  <discrete_domain id="mesh.node" value="index">
+  <discrete_domain id="mesh.node" type="index">
     <component id="id">
       3  4  5  8  9  10  14  15  19  20  24  25
     </component>
@@ -25,15 +25,18 @@
   
   <!--
     We should just induce a specially-named component index domain for each
-    explicitly defined domain. 
+    explicitly defined domain.
+    
+    The type is "name" and not "string" because the values refer to a specific
+    set of names defined elsewhere, rather that a set of arbitrary strings.
    -->
-  <discrete_domain id="node.parameters.component_name">
+  <discrete_domain id="node.parameters.component_name" type="name">
     <component id="name">
       x y g n
     </component>
   </discrete_domain>
 
-  <discrete_domain id="mesh.element_nodes" value="index">
+  <discrete_domain id="mesh.element_nodes" type="index">
     <import_component id="node1" domain="mesh.node" component="id" />
     <import_component id="node2" domain="mesh.node" component="id" />
     <import_component id="node3" domain="mesh.node" component="id" />
@@ -44,7 +47,7 @@
     Elements of a "field" type domain component must all have the same input
     parameter and value types. 
    -->
-  <discrete_domain id="interpolation_field" value="field">
+  <discrete_domain id="interpolation_field" type="field">
     <component id="interpolator" >
       library::bilinear_interpolation  library::bicubic_hermite_interpolation
     </component>
@@ -54,22 +57,22 @@
     <parameter id="element" domain="mesh.element" />
     <parameter id="component_name" domain="node.parameters.component_name" />
     
-    <derived_parameter id="nodes" field="element.nodes" >
+    <value id="nodes" field="element.nodes" >
       <parameter id="element" />
-    </derived_parameter>
+    </value>
     
-    <derived_parameter id="node1_parameters"  field="node.parameters">
+    <value id="node1_parameters"  field="node.parameters">
       <parameter id="nodes.node1" />
-    </derived_parameter>
-    <derived_parameter id="node2_parameters"  field="node.parameters">
+    </value>
+    <value id="node2_parameters"  field="node.parameters">
       <parameter id="nodes.node2" />
-    </derived_parameter>
-    <derived_parameter id="node3_parameters"  field="node.parameters">
+    </value>
+    <value id="node3_parameters"  field="node.parameters">
       <parameter id="nodes.node3" />
-    </derived_parameter>
-    <derived_parameter id="node4_parameters"  field="node.parameters">
+    </value>
+    <value id="node4_parameters"  field="node.parameters">
       <parameter id="nodes.node4" />
-    </derived_parameter>
+    </value>
     
     <assign_named_component id="u1" parameter="node1_parameters" name="component_name" />
     <assign_named_component id="u2" parameter="node2_parameters" name="component_name" />
@@ -82,12 +85,12 @@
     <parameter id="xi" domain="library::unit_square" />
     <parameter id="component_name" domain="node.parameters.component_name" />
 
-    <derived_parameter id="parameter_values" field="element.bilinear_parameters">
+    <value id="parameter_values" field="element.bilinear_parameters">
       <parameter id="element"/>
       <parameter id="component_name"/>
-    </derived_parameter>
+    </value>
      
-    <derived_parameter id="interpolated_value" field="library::bilinear_interpolation" />
+    <value id="interpolated_value" field="library::bilinear_interpolation" />
     
     <assign_component id="value" parameter="interpolated_value" component="value"/>
   </field>
@@ -96,9 +99,9 @@
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
     
-    <derived_parameter id="interpolation_field" field="element.coordinate_interpolation_field">
+    <value id="interpolation_field" field="element.coordinate_interpolation_field">
       <parameter id="element" />
-    </derived_parameter>
+    </value>
     
     <!--
       This implies that the basis functions need to be re-evaluated for each
@@ -107,16 +110,16 @@
       indeed any other kind of interpolator) that does the job in batches,
       allowing the phi vector to be re-used.  
      -->
-    <derived_parameter id="interpolated_x" parameter_field="interpolation_field">
+    <indirect_value id="interpolated_x" value="interpolation_field" value_component="interpolator">
       <parameter id="element" />
       <parameter id="xi" />
       <literal_parameter value="x" />
-    </derived_parameter>
-    <derived_parameter id="interpolated_y" parameter_field="interpolation_field">
+    </indirect_value>
+    <indirect_value id="interpolated_y" value="interpolation_field" value_component="interpolator">
       <parameter id="element" />
       <parameter id="xi" />
       <literal_parameter value="y" />
-    </derived_parameter>
+    </indirect_value>
 
     <assign_component id="x" parameter="interpolated_x" component="value" />
 
@@ -127,15 +130,15 @@
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
     
-    <derived_parameter id="interpolation_field" field="element.g_interpolation_field">
+    <value id="interpolation_field" field="element.g_interpolation_field">
       <parameter id="element" />
-    </derived_parameter>
+    </value>
     
-    <derived_parameter id="interpolated_g" parameter_field="interpolation_field">
+    <indirect_value id="interpolated_g" value="interpolation_field" value_component="interpolator">
       <parameter id="element" />
       <parameter id="xi" />
       <literal_parameter value="g" />
-    </derived_parameter>
+    </indirect_value>
 
     <assign_component id="g" parameter="interpolated_g" component="value" />
   </field>
@@ -144,15 +147,15 @@
     <parameter id="element" domain="mesh.element" />
     <parameter id="xi" domain="library::unit_square" />
     
-    <derived_parameter id="interpolation_field" field="element.n_interpolation_field">
+    <value id="interpolation_field" field="element.n_interpolation_field">
       <parameter id="element" />
-    </derived_parameter>
+    </value>
     
-    <derived_parameter id="interpolated_n" parameter_field="interpolation_field">
+    <indirect_value id="interpolated_n" value="interpolation_field" value_component="interpolator">
       <parameter id="element" />
       <parameter id="xi" />
       <literal_parameter value="n" />
-    </derived_parameter>
+    </indirect_value>
 
     <assign_component id="n" parameter="interpolated_n" component="value" />
   </field>
