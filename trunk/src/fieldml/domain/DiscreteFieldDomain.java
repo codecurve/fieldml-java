@@ -7,25 +7,28 @@ import java.util.List;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
+import fieldml.util.general.ImmutableList;
 
-public class DiscreteDomain
+public class DiscreteFieldDomain
     extends Domain
 {
-    private final List<int[]> componentValues = new ArrayList<int[]>();
+    //TODO We need to convert the field names into field ids for internal use.
+    private final List<int[]> fieldIds = new ArrayList<int[]>();
+
+    private final List<String[]> fieldNames = new ArrayList<String[]>();
 
 
-    public DiscreteDomain( FieldmlObjectManager<Domain> manager, String name )
+    public DiscreteFieldDomain( FieldmlObjectManager<Domain> manager, String name )
         throws FieldmlException
     {
         super( manager, name );
-
     }
 
 
-    public int addComponent( String componentName, int[] values, int valueCount )
+    public int addComponent( String componentName, String[] names, int valueCount )
         throws FieldmlException
     {
-        if( values.length < valueCount )
+        if( names.length < valueCount )
         {
             throw new BadFieldmlParameterException();
         }
@@ -37,8 +40,9 @@ public class DiscreteDomain
         super.addComponent( componentName );
 
         // TODO Check that each value is unique.
-        componentValues.add( Arrays.copyOfRange( values, 0, valueCount ) );
-        
+        fieldNames.add( Arrays.copyOfRange( names, 0, valueCount ) );
+        fieldIds.add( new int[ valueCount ] );
+
         return getComponentCount() - 1;
     }
 
@@ -46,24 +50,24 @@ public class DiscreteDomain
     public int getComponentValueCount( int componentIndex )
         throws FieldmlException
     {
-        if( ( componentIndex < 0 ) || ( componentIndex >= componentValues.size() ) )
+        if( ( componentIndex < 0 ) || ( componentIndex >= fieldNames.size() ) )
         {
             throw new BadFieldmlParameterException();
         }
 
-        return componentValues.get( componentIndex ).length;
+        return fieldNames.get( componentIndex ).length;
     }
 
 
-    public int getComponentValues( int componentIndex, int[] values )
+    public int getComponentValues( int componentIndex, String[] values )
         throws FieldmlException
     {
-        if( ( componentIndex < 0 ) || ( componentIndex >= componentValues.size() ) )
+        if( ( componentIndex < 0 ) || ( componentIndex >= fieldNames.size() ) )
         {
             throw new BadFieldmlParameterException();
         }
 
-        int[] sourceValues = componentValues.get( componentIndex );
+        String[] sourceValues = fieldNames.get( componentIndex );
 
         if( values.length < sourceValues.length )
         {
@@ -73,5 +77,12 @@ public class DiscreteDomain
         System.arraycopy( sourceValues, 0, values, 0, sourceValues.length );
 
         return sourceValues.length;
+    }
+
+
+    public ImmutableList<Domain> getSignature()
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

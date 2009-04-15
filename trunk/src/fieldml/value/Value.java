@@ -1,7 +1,8 @@
 package fieldml.value;
 
 import fieldml.domain.ContinuousDomain;
-import fieldml.domain.DiscreteDomain;
+import fieldml.domain.DiscreteFieldDomain;
+import fieldml.domain.DiscreteIndexDomain;
 import fieldml.domain.Domain;
 
 public class Value
@@ -12,6 +13,8 @@ public class Value
     public final int[] indexValues;
 
     public final double[] realValues;
+    
+    public final int[] fieldIdValues;
 
     public final Domain domain;
 
@@ -20,21 +23,30 @@ public class Value
     {
         this.domain = domain;
 
-        if( domain instanceof DiscreteDomain )
+        if( domain instanceof DiscreteIndexDomain )
         {
             indexValues = new int[domain.getComponentCount()];
             realValues = null;
+            fieldIdValues = null;
         }
         else if( domain instanceof ContinuousDomain )
         {
             indexValues = null;
             realValues = new double[domain.getComponentCount()];
+            fieldIdValues = null;
+        }
+        else if( domain instanceof DiscreteFieldDomain )
+        {
+            indexValues = null;
+            realValues = null;
+            fieldIdValues = new int[domain.getComponentCount()];
         }
         else
         {
             //ERROR
             indexValues = null;
             realValues = null;
+            fieldIdValues = null;
         }
     }
 }

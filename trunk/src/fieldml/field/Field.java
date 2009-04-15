@@ -7,6 +7,8 @@ import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObject;
 import fieldml.util.FieldmlObjectManager;
+import fieldml.util.general.ImmutableList;
+import fieldml.util.general.MutableArrayList;
 import fieldml.value.Value;
 
 public abstract class Field
@@ -92,7 +94,19 @@ public abstract class Field
     }
 
 
-    // TODO: Needs Javadoc.
+    /**
+     * Evaluate this field using the given parameters. The parameters are
+     * provided by a FieldParameters object, and a list of indexes into that
+     * object. This allows the caller to re-use the same FieldParameters object
+     * to build up a set of values without having to construct a correctly
+     * ordered list of parameters for each field evaluation they wish to do.
+     * 
+     * The field evaluates into the given Value object, which may in turn be an
+     * entry in the given FieldParameters object.
+     * 
+     * This makes the FieldParameters analogous to a heap, and the indexes into
+     * it analogous to a list of references.
+     */
     public abstract void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
         throws FieldmlException;
 
@@ -158,10 +172,25 @@ public abstract class Field
     {
         return getInputParameterCount();
     }
-    
-    
+
+
     public int getParameterIndex( String name )
     {
         return parameterNames.indexOf( name );
+    }
+
+
+    public ImmutableList<Domain> getSignature()
+    {
+        MutableArrayList<Domain> signature = new MutableArrayList<Domain>();
+
+        signature.add( valueDomain );
+
+        for( Domain parameterDomain : parameterDomains )
+        {
+            signature.add( parameterDomain );
+        }
+
+        return signature;
     }
 }

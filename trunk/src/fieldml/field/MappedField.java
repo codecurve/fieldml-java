@@ -1,6 +1,6 @@
 package fieldml.field;
 
-import fieldml.domain.DiscreteDomain;
+import fieldml.domain.DiscreteIndexDomain;
 import fieldml.domain.Domain;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
@@ -21,7 +21,7 @@ public abstract class MappedField
     }
 
 
-    public void setMappingParameterDomain( DiscreteDomain domain, int componentIndex )
+    public void setMappingParameterDomain( DiscreteIndexDomain domain, int componentIndex )
         throws FieldmlException
     {
         if( getInputParameterCount() != 0 )

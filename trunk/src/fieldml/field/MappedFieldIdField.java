@@ -1,6 +1,5 @@
 package fieldml.field;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,33 +10,43 @@ import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
 // TODO: Needs Javadoc
-public class MappedIndexField
+public class MappedFieldIdField
     extends MappedField
     implements IndexField
 {
     private final Map<Integer, int[]> valueMap;
 
+    private final FieldmlObjectManager<Field> manager;
 
-    public MappedIndexField( FieldmlObjectManager<Field> manager, String name, DiscreteIndexDomain valueDomain )
+
+    public MappedFieldIdField( FieldmlObjectManager<Field> manager, String name, DiscreteIndexDomain valueDomain )
         throws FieldmlException
     {
         super( manager, name, valueDomain );
 
         valueMap = new HashMap<Integer, int[]>();
+        this.manager = manager;
     }
 
 
-    public void setComponentValues( int parameterValue, int[] componentValues )
+    public void setComponentValues( int parameterValue, String[] fieldNames )
         throws FieldmlException
     {
         int componentCount = getComponentCount();
 
-        if( componentValues.length < componentCount )
+        if( fieldNames.length < componentCount )
         {
             throw new BadFieldmlParameterException();
         }
 
-        valueMap.put( parameterValue, Arrays.copyOf( componentValues, componentCount ) );
+        int[] fieldIds = new int[fieldNames.length];
+
+        for( int i = 0; i < fieldNames.length; i++ )
+        {
+            fieldIds[i] = manager.getId( fieldNames[i] );
+        }
+
+        valueMap.put( parameterValue, fieldIds );
     }
 
 
@@ -66,21 +75,21 @@ public class MappedIndexField
 
         for( int i = 0; i < count; i++ )
         {
-            value.indexValues[i] = values[i];
+            value.fieldIdValues[i] = values[i];
         }
     }
 
 
-    public void getComponentValues( int parameterValue, int[] componentValues )
+    public void getComponentFieldIds( int parameterValue, int[] componentFieldIds )
         throws FieldmlException
     {
-        int[] values = valueMap.get( parameterValue );
+        int[] ids = valueMap.get( parameterValue );
 
-        if( ( values == null ) || ( componentValues.length < values.length ) )
+        if( ( ids == null ) || ( componentFieldIds.length < ids.length ) )
         {
             throw new BadFieldmlParameterException();
         }
 
-        System.arraycopy( values, 0, componentValues, 0, getComponentCount() );
+        System.arraycopy( ids, 0, componentFieldIds, 0, getComponentCount() );
     }
 }

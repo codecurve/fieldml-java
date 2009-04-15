@@ -23,25 +23,30 @@ public interface FieldML
     public static final int ERR_NO_SUCH_OBJECT = -2;
     public static final int ERR_WRONG_OBJECT_TYPE = -3;
     public static final int ERR_BAD_PARAMETER = -4;
+    public static final int ERR_INVALID_CALL = -5;
     
     //Domain methods
     /**
-     * Create a continuous domain with the given name, and return a domain id
-     * on success, or an error-code otherwise.
+     * Create a continuous domain with the given name, and return an error-code.
      * 
      * Continuous domains have components with optional upper and lower bounds.
      * Components on a continuous domain are 64-bit doubles.
      */
-    public int FieldML_CreateContinuousDomain( String name );
+    public int FieldML_BeginContinuousDomain( String name );
 
     /**
-     * Create a discrete domain with the given name, and return a domain id
-     * on success, or an error-code otherwise.
+     * Create a discrete domain with the given name, and return an error-code.
      * 
      * Discrete domains have components with a fixed set of possible integer values.
      * Components on a discrete domain are 32-bit integers.
      */
-    public int FieldML_CreateDiscreteDomain( String name );
+    public int FieldML_BeginDiscreteDomain( String name );
+    
+    /**
+     * End the definition of the current domain, and return a domain id on success,
+     * or an error code otherwise.
+     */
+    public int FieldML_EndDomain();
 
     /**
      * Return the domain id for the given domain (if it exists) or an error code otherwise.
@@ -56,7 +61,7 @@ public interface FieldML
     public int FieldML_GetDomainName( int domainId, char[] name );
 
     /**
-     * Add a component of the given name to the continuous domain with the given id.
+     * Add a component of the given name to the current continuous domain.
      * The component's extrema are defined by the given min and max parameters.
      * 
      * ERR_NO_SUCH_OBJECT if there is no domain with the given id.
@@ -64,10 +69,10 @@ public interface FieldML
      * ERR_BAD_PARAMETER if a component of the given name already exists.
      * ERR_BAD_PARAMETER if either of the extrema values is NaN.
      */
-    public int FieldML_AddContinuousDomainComponent( int domainId, String componentName, double min, double max );
+    public int FieldML_AddContinuousDomainComponent( String componentName, double min, double max );
 
     /**
-     * Add a component of the given name to the discrete domain with the given id.
+     * Add a component of the given name to the current discrete domain.
      * The component's values are taken from the first count entries in the values array.
      * 
      * ERR_NO_SUCH_OBJECT if there is no domain with the given id.
@@ -77,7 +82,7 @@ public interface FieldML
      * 
      * @see FieldML_GetDomainComponentCount
      */
-    public int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int[] values, int count );
+    public int FieldML_AddDiscreteDomainComponent( String componentName, int[] values, int count );
     
     /**
      * Return the number of components that the given domain has. This number can be zero
@@ -138,12 +143,18 @@ public interface FieldML
     //Ordinary fields
     /**
      * Create a computed field with the given name and a value on the given
-     * domain, and return a field id on success, or an error-code otherwise.
+     * domain, and return an error-code.
      *
      * ERR_BAD_PARAMETER if there is no domain with the given id.
      */
-    public int FieldML_CreateField( String name, int valueDomainId );
+    public int FieldML_BeginField( String name, int valueDomainId );
     
+    /**
+     * End the definition of the current field, and return a field id on success,
+     * or an error code otherwise.
+     */
+    public int FieldML_EndField();
+
     /**
      * Return the field id for the given field (if it exists) or an error code otherwise.
      */
@@ -157,7 +168,7 @@ public interface FieldML
     public int FieldML_GetFieldName( int fieldId, char[] name );
     
     /**
-     * Define an input parameter of the given type and name to the given field.
+     * Define an input parameter of the given type and name to the current field.
      * Input parameters must be passed in when evaluating a field, and are
      * analogous to function arguments.
      * Further input parameters cannot be added once any derived parameters
@@ -169,10 +180,10 @@ public interface FieldML
      * ERR_WRONG_OBJECT_TYPE if the field id does not correspond to a computed domain.
      * ERR_BAD_PARAMETER if there is already a parameter with the given name.
      */
-    public int FieldML_AddInputParameter( int fieldId, String parameterName, int domainId );
+    public int FieldML_AddInputParameter( String parameterName, int domainId );
     
     /**
-     * Add a derived parameter of the name to the given field.
+     * Add a derived parameter of the name to the current field.
      * Like input parameters, derived parameters are used for evaluating other
      * derived parameters, and final component values. However, derived
      * parameters are obtained by evaluating a field. The arguments are passed
@@ -193,7 +204,8 @@ public interface FieldML
      * 
      * @see FieldML_GetInputParameterCount
      */
-    public int FieldML_AddDerivedParameter( int fieldId, String parameterName, int parameterFieldId, int[] argumentIndexes );
+    public int FieldML_AddDerivedParameter( String parameterName, int parameterFieldId, int[] argumentIndexes );
+    public int FieldML_AddDerivedParameter( String parameterName, int fieldParameterIndex, int fieldParameterComponentIndex, int[] argumentIndexes );
     
     /**
      * Returns the total number of parameters used by this field, including
@@ -240,7 +252,7 @@ public interface FieldML
     //Mapped fields
     /**
      * Create a mapped field with the given name and a value on the given
-     * domain, and return a field id on success, or an error-code otherwise.
+     * domain, and return an error-code.
      * 
      * Mapped fields only take one input parameter, have no derived parameters,
      * and evaluate based on a single component of its input parameter, which
@@ -249,7 +261,7 @@ public interface FieldML
      *
      * ERR_BAD_PARAMETER if there is no domain with the given id.
      */
-    public int FieldML_CreateMappedField( String name, int valueDomainId );
+    public int FieldML_BeginMappedField( String name, int valueDomainId );
 
     /**
      * Set the domain of the field's parameter, and which component of the
@@ -265,7 +277,7 @@ public interface FieldML
      * @see FieldML_GetValueDomain
      * @see FieldML_GetDomainComponentCount
      */
-    public int FieldML_SetMappingParameter( int fieldId, int domainId, int componentIndex );
+    public int FieldML_SetMappingParameter( int domainId, int componentIndex );
 
     /**
      * Return the domain id of this mapped field's parameter.
@@ -284,7 +296,7 @@ public interface FieldML
     public int FieldML_GetMappingParameterComponentIndex( int fieldId );
     
     /**
-     * Assign values for the given index-valued mapped field to return for the
+     * Assign values for the current index-valued mapped field to return for the
      * given input parameter value. The given array must be hold at least a
      * number of integers equal to the number of components of this field's
      * value domain.
@@ -296,10 +308,10 @@ public interface FieldML
      * @see FieldML_GetValueDomain
      * @see FieldML_GetDomainComponentCount
      */
-    public int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues );
+    public int FieldML_AssignDiscreteComponentValues( int parameterValue, int[] componentValues );
     
     /**
-     * Assign values for the given real-valued mapped field to return for the
+     * Assign values for the current real-valued mapped field to return for the
      * given input parameter value. The given array must be hold at least a
      * number of doubles equal to the number of components of this field's
      * value domain.
@@ -310,7 +322,7 @@ public interface FieldML
      * 
      * @see FieldML_GetDomainComponentCount
      */
-    public int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues );
+    public int FieldML_AssignContinuousComponentValues( int parameterValue, double[] componentValues );
     
     /**
      * Return the values that the given index-valued mapped field returns for the

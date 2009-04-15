@@ -6,7 +6,7 @@ import java.util.Map;
 
 import fieldml.FieldML;
 import fieldml.domain.ContinuousDomain;
-import fieldml.domain.DiscreteDomain;
+import fieldml.domain.DiscreteIndexDomain;
 import fieldml.domain.Domain;
 import fieldml.exception.FieldmlException;
 import fieldml.field.ComputedField;
@@ -27,9 +27,18 @@ public class FieldMLJava
     implements FieldML
 {
     private final FieldmlObjectManager<Domain> domainManager;
+
     private final FieldmlObjectManager<Field> fieldManager;
 
     private final FieldmlObjectManager<FieldParameters> cacheManager;
+
+    /**
+     * The domain currently being defined. Only one 'partially-defined' object
+     * can exist at a time.
+     */
+    private Domain currentDomain;
+
+    private Field currentField;
 
     /**
      * Temporary values that fields can evaluate into for the
@@ -57,13 +66,18 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_CreateContinuousDomain( String name )
+    public int FieldML_BeginContinuousDomain( String name )
     {
         try
         {
-            Domain domain = new ContinuousDomain( domainManager, name );
+            if( ( currentField != null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
 
-            return domain.getId();
+            currentDomain = new ContinuousDomain( domainManager, name );
+
+            return FieldML.NO_ERROR;
         }
         catch( FieldmlException e )
         {
@@ -73,18 +87,39 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_CreateDiscreteDomain( String name )
+    public int FieldML_BeginDiscreteDomain( String name )
     {
         try
         {
-            Domain domain = new DiscreteDomain( domainManager, name );
+            if( ( currentField != null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
 
-            return domain.getId();
+            currentDomain = new DiscreteIndexDomain( domainManager, name );
+
+            return FieldML.NO_ERROR;
         }
         catch( FieldmlException e )
         {
             return e.errorCode;
         }
+    }
+
+
+    @Override
+    public int FieldML_EndDomain()
+    {
+        if( ( currentField != null ) || ( currentDomain == null ) )
+        {
+            return FieldML.ERR_INVALID_CALL;
+        }
+
+        int id = currentDomain.getId();
+
+        currentDomain = null;
+
+        return id;
     }
 
 
@@ -103,11 +138,16 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddContinuousDomainComponent( int domainId, String componentName, double min, double max )
+    public int FieldML_AddContinuousDomainComponent( String componentName, double min, double max )
     {
         try
         {
-            ContinuousDomain domain = domainManager.getByClass( domainId, ContinuousDomain.class );
+            if( ( currentField != null ) || ( currentDomain == null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+            
+            ContinuousDomain domain = domainManager.getByClass( currentDomain.getId(), ContinuousDomain.class );
 
             return domain.addComponent( componentName, min, max );
         }
@@ -119,11 +159,16 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddDiscreteDomainComponent( int domainId, String componentName, int[] values, int valueCount )
+    public int FieldML_AddDiscreteDomainComponent( String componentName, int[] values, int valueCount )
     {
         try
         {
-            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+            if( ( currentField != null ) || ( currentDomain == null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            DiscreteIndexDomain domain = domainManager.getByClass( currentDomain.getId(), DiscreteIndexDomain.class );
 
             return domain.addComponent( componentName, values, valueCount );
         }
@@ -135,47 +180,49 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_CreateField( String name, int valueDomainId )
+    public int FieldML_BeginField( String name, int valueDomainId )
     {
         // We could use domains to generate correctly-typed fields here without
         // having to use instaceofs.
         try
         {
+            if( ( currentField != null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
             Domain domain = domainManager.get( valueDomainId );
 
-            if( domain instanceof DiscreteDomain )
+            if( domain instanceof DiscreteIndexDomain )
             {
-                DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+                DiscreteIndexDomain discreteDomain = (DiscreteIndexDomain)domain;
 
-                Field field = new ComputedIndexField( fieldManager, discreteDomain, name );
+                currentField = new ComputedIndexField( fieldManager, discreteDomain, name );
 
-                outputValues.put( field, new Value( discreteDomain ) );
+                outputValues.put( currentField, new Value( discreteDomain ) );
 
-                return field.getId();
-
+                return FieldML.NO_ERROR;
             }
             else if( domain instanceof ContinuousDomain )
             {
                 ContinuousDomain continuousDomain = (ContinuousDomain)domain;
 
-                Field field;
-
                 if( name.equals( "library::bilinear_lagrange" ) )
                 {
-                    field = new BilinearLagrange( fieldManager, domainManager );
+                    currentField = new BilinearLagrange( fieldManager, domainManager );
                 }
                 else if( name.equals( "library::bilinear_interpolation" ) )
                 {
-                    field = new BilinearInterpolation( fieldManager, domainManager );
+                    currentField = new BilinearInterpolation( fieldManager, domainManager );
                 }
                 else
                 {
-                    field = new ComputedRealField( fieldManager, continuousDomain, name );
+                    currentField = new ComputedRealField( fieldManager, continuousDomain, name );
                 }
 
-                outputValues.put( field, new Value( continuousDomain ) );
+                outputValues.put( currentField, new Value( continuousDomain ) );
 
-                return field.getId();
+                return FieldML.NO_ERROR;
             }
             else
             {
@@ -186,6 +233,22 @@ public class FieldMLJava
         {
             return e.errorCode;
         }
+    }
+    
+    
+    @Override
+    public int FieldML_EndField()
+    {
+        if( ( currentField == null ) || ( currentDomain != null ) )
+        {
+            return FieldML.ERR_INVALID_CALL;
+        }
+
+        int id = currentField.getId();
+
+        currentField = null;
+
+        return id;
     }
 
 
@@ -204,30 +267,34 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_CreateMappedField( String name, int valueDomainId )
+    public int FieldML_BeginMappedField( String name, int valueDomainId )
     {
         try
         {
+            if( ( currentField != null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
             Domain domain = domainManager.get( valueDomainId );
 
-            if( domain instanceof DiscreteDomain )
+            if( domain instanceof DiscreteIndexDomain )
             {
-                DiscreteDomain discreteDomain = (DiscreteDomain)domain;
+                DiscreteIndexDomain discreteDomain = (DiscreteIndexDomain)domain;
 
-                Field field = new MappedIndexField( fieldManager, name, discreteDomain );
-                outputValues.put( field, new Value( discreteDomain ) );
+                currentField = new MappedIndexField( fieldManager, name, discreteDomain );
+                outputValues.put( currentField, new Value( discreteDomain ) );
 
-                return field.getId();
-
+                return FieldML.NO_ERROR;
             }
             else if( domain instanceof ContinuousDomain )
             {
                 ContinuousDomain continuousDomain = (ContinuousDomain)domain;
 
-                Field field = new MappedRealField( fieldManager, name, continuousDomain );
-                outputValues.put( field, new Value( continuousDomain ) );
+                currentField = new MappedRealField( fieldManager, name, continuousDomain );
+                outputValues.put( currentField, new Value( continuousDomain ) );
 
-                return field.getId();
+                return FieldML.NO_ERROR;
             }
             else
             {
@@ -242,11 +309,16 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AssignDiscreteComponentValues( int fieldId, int parameterValue, int[] componentValues )
+    public int FieldML_AssignDiscreteComponentValues( int parameterValue, int[] componentValues )
     {
         try
         {
-            MappedIndexField field = fieldManager.getByClass( fieldId, MappedIndexField.class );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            MappedIndexField field = fieldManager.getByClass( currentField.getId(), MappedIndexField.class );
 
             field.setComponentValues( parameterValue, componentValues );
 
@@ -260,11 +332,16 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AssignContinuousComponentValues( int fieldId, int parameterValue, double[] componentValues )
+    public int FieldML_AssignContinuousComponentValues( int parameterValue, double[] componentValues )
     {
         try
         {
-            MappedRealField field = fieldManager.getByClass( fieldId, MappedRealField.class );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            MappedRealField field = fieldManager.getByClass( currentField.getId(), MappedRealField.class );
 
             field.setComponentValues( parameterValue, componentValues );
 
@@ -278,13 +355,18 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_SetMappingParameter( int fieldId, int domainId, int componentIndex )
+    public int FieldML_SetMappingParameter( int domainId, int componentIndex )
     {
         try
         {
-            MappedField field = fieldManager.getByClass( fieldId, MappedField.class );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
 
-            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+            MappedField field = fieldManager.getByClass( currentField.getId(), MappedField.class );
+
+            DiscreteIndexDomain domain = domainManager.getByClass( domainId, DiscreteIndexDomain.class );
 
             field.setMappingParameterDomain( domain, componentIndex );
 
@@ -298,11 +380,16 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddInputParameter( int fieldId, String parameterName, int domainId )
+    public int FieldML_AddInputParameter( String parameterName, int domainId )
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
 
             Domain domain = domainManager.get( domainId );
 
@@ -316,15 +403,43 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddDerivedParameter( int fieldId, String parameterName, int parameterFieldId, int[] argumentIndexes )
+    public int FieldML_AddDerivedParameter( String parameterName, int parameterFieldId, int[] argumentIndexes )
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
 
             Field parameterField = fieldManager.get( parameterFieldId );
 
             return field.addDerivedParameter( parameterName, parameterField, argumentIndexes );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    @Override
+    public int FieldML_AddDerivedParameter( String parameterName, int fieldParameterIndex,
+        int fieldParameterComponentIndex, int[] argumentIndexes )
+    {
+        try
+        {
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
+
+            return field
+                .addDerivedParameter( parameterName, fieldParameterIndex, fieldParameterComponentIndex, argumentIndexes );
         }
         catch( FieldmlException e )
         {
@@ -563,7 +678,7 @@ public class FieldMLJava
     {
         try
         {
-            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+            DiscreteIndexDomain domain = domainManager.getByClass( domainId, DiscreteIndexDomain.class );
 
             return domain.getComponentValueCount( componentIndex );
         }
@@ -579,7 +694,7 @@ public class FieldMLJava
     {
         try
         {
-            DiscreteDomain domain = domainManager.getByClass( domainId, DiscreteDomain.class );
+            DiscreteIndexDomain domain = domainManager.getByClass( domainId, DiscreteIndexDomain.class );
 
             return domain.getComponentValues( componentIndex, values );
         }
@@ -616,8 +731,7 @@ public class FieldMLJava
 
             String componentName = domain.getComponentName( componentIndex );
 
-            StringUtils.stringToChars(name, componentName);
-
+            StringUtils.stringToChars( name, componentName );
 
             return NO_ERROR;
         }
@@ -688,7 +802,7 @@ public class FieldMLJava
 
             String parameterName = field.getParameterName( parameterIndex );
 
-            StringUtils.stringToChars(name, parameterName);
+            StringUtils.stringToChars( name, parameterName );
 
             return NO_ERROR;
         }
@@ -758,7 +872,7 @@ public class FieldMLJava
 
             String domainName = domain.getName();
 
-            StringUtils.stringToChars(name, domainName);
+            StringUtils.stringToChars( name, domainName );
 
             return NO_ERROR;
         }
@@ -778,7 +892,7 @@ public class FieldMLJava
 
             String fieldName = field.getName();
 
-            StringUtils.stringToChars(name, fieldName);
+            StringUtils.stringToChars( name, fieldName );
 
             return NO_ERROR;
         }
