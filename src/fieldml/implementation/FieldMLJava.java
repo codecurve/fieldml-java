@@ -439,7 +439,7 @@ public class FieldMLJava
             ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
 
             return field
-                .addDerivedParameter( parameterName, fieldParameterIndex, fieldParameterComponentIndex, argumentIndexes );
+                .addIndirectParameter( parameterName, fieldParameterIndex, fieldParameterComponentIndex, argumentIndexes );
         }
         catch( FieldmlException e )
         {
@@ -757,6 +757,22 @@ public class FieldMLJava
             return e.errorCode;
         }
     }
+    
+    
+    @Override
+    public int FieldML_GetParameterType( int fieldId, int parameterIndex )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+
+            return field.getParameterType( parameterIndex );
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
 
 
     @Override
@@ -776,13 +792,13 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetInputParameterDomain( int fieldId, int parameterIndex )
+    public int FieldML_GetParameterDomain( int fieldId, int parameterIndex )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
 
-            Domain domain = field.getInputParameterDomain( parameterIndex );
+            Domain domain = field.getParameterDomain( parameterIndex );
 
             return domain.getId();
         }
