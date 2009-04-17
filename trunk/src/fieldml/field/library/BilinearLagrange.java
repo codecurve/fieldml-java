@@ -5,6 +5,7 @@ import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.field.Field;
 import fieldml.field.FieldParameters;
+import fieldml.field.InputParameter;
 import fieldml.field.RealField;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -65,7 +66,7 @@ public class BilinearLagrange
     {
         super( manager, "library::bilinear_lagrange", domainManager.get( "library::bilinear_interpolation_parameters" ) );
 
-        addParameter( "xi", domainManager.get( "library::unit_square" ) );
+        addParameter( new InputParameter( "xi", domainManager.get( "library::unit_square" ), 0 ) );
     }
 
 

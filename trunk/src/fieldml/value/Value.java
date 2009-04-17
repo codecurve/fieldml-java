@@ -23,6 +23,7 @@ public class Value
     {
         this.domain = domain;
 
+        //This is somewhat ugly, but it seems to be the least-ugly way to do it.
         if( domain instanceof DiscreteIndexDomain )
         {
             indexValues = new int[domain.getComponentCount()];
@@ -43,10 +44,39 @@ public class Value
         }
         else
         {
+            assert true : "Value should be able to contain values for domain-type " + domain.getClass();
             //ERROR
             indexValues = null;
             realValues = null;
             fieldIdValues = null;
+        }
+    }
+    
+    
+    public void assign( Value value )
+    {
+        int count = domain.getComponentCount();
+        
+        if( indexValues != null )
+        {
+            for( int i = 0; i < count; i++ )
+            {
+                indexValues[i] = value.indexValues[i];
+            }
+        }
+        if( realValues != null )
+        {
+            for( int i = 0; i < count; i++ )
+            {
+                realValues[i] = value.realValues[i];
+            }
+        }
+        if( fieldIdValues != null )
+        {
+            for( int i = 0; i < count; i++ )
+            {
+                fieldIdValues[i] = value.fieldIdValues[i];
+            }
         }
     }
 }

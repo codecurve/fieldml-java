@@ -25,6 +25,11 @@ public interface FieldML
     public static final int ERR_BAD_PARAMETER = -4;
     public static final int ERR_INVALID_CALL = -5;
     
+    //Parameter types
+    public static final int PT_INPUT_PARAMETER = 0;
+    public static final int PT_DIRECT_PARAMETER = 1;
+    public static final int PT_INDIRECT_PARAMETER = 2;
+    
     //Domain methods
     /**
      * Create a continuous domain with the given name, and return an error-code.
@@ -216,6 +221,18 @@ public interface FieldML
      */
     public int FieldML_GetParameterCount( int fieldId );
     
+    
+    /**
+     * Returns the type of the given parameter (if it exists), one of:
+     * 
+     * PT_INPUT_PARAMETER
+     * PT_DIRECT_PARAMETER
+     * PT_INDIRECT_PARAMETER
+     * 
+     * ERR_BAD_PARAMETER if the indexed parameter does not exist.
+     */
+    public int FieldML_GetParameterType( int fieldId, int parameterIndex );
+    
     /**
      * Returns the domain id of the given field's value.
      * 
@@ -365,14 +382,14 @@ public interface FieldML
     public int FieldML_GetInputParameterCount( int fieldId );
     
     /**
-     * Return the domain id for the given input parameter.
+     * Return the domain id for the given parameter.
      * 
      * ERR_NO_SUCH_OBJECT if there is no field with the given id.
      * ERR_BAD_PARAMETER if the parameter index is invalid.
      * 
-     * @see FieldML_GetInputParameterCount
+     * @see FieldML_GetParameterCount
      */
-    public int FieldML_GetInputParameterDomain( int fieldId, int parameterIndex );
+    public int FieldML_GetParameterDomain( int fieldId, int parameterIndex );
     
     /**
      * Return the domain ids for all input parameters.
@@ -381,6 +398,7 @@ public interface FieldML
      * ERR_BAD_PARAMETER if the parameter index is invalid.
      * 
      * @see FieldML_GetInputParameterCount
+     * @see FieldML_CreateCache
      */
     public int FieldML_GetInputParameterDomains( int fieldId, int[] domainIds );
     

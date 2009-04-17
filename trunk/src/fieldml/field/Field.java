@@ -31,17 +31,7 @@ public abstract class Field
      */
     private final String name;
 
-    /**
-     * The domains for each input parameter. These will not necessarily be the
-     * same as the domains of fieldParameters
-     */
-    private final ArrayList<Domain> parameterDomains;
-
-    /**
-     * This is essentially a list of debug symbols, and is not actually
-     * referenced during evaulation.
-     */
-    private final ArrayList<String> parameterNames;
+    private final ArrayList<Parameter> parameters;
 
 
     public Field( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
@@ -50,8 +40,7 @@ public abstract class Field
         this.name = name;
         this.valueDomain = valueDomain;
 
-        parameterDomains = new ArrayList<Domain>();
-        parameterNames = new ArrayList<String>();
+        parameters = new ArrayList<Parameter>();
 
         id = manager.add( this );
     }
@@ -111,60 +100,64 @@ public abstract class Field
         throws FieldmlException;
 
 
-    protected void addParameter( String parameterName, Domain domain )
+    protected void addParameter( Parameter parameter )
         throws FieldmlException
     {
-        if( parameterNames.contains( parameterName ) )
+        for( Parameter p : parameters )
         {
-            throw new BadFieldmlParameterException();
+            if( p.getName().equals( parameter.getName() ) )
+            {
+                throw new BadFieldmlParameterException();
+            }
         }
-        parameterDomains.add( domain );
-        parameterNames.add( parameterName );
+
+        parameters.add( parameter );
     }
 
 
     public int getInputParameterCount()
     {
-        return parameterDomains.size();
+        return parameters.size();
     }
 
 
     public void getInputParameterDomains( int[] domainIds )
         throws FieldmlException
     {
-        if( domainIds.length < parameterDomains.size() )
-        {
-            throw new BadFieldmlParameterException();
-        }
+        int index = 0;
 
-        for( int i = 0; i < parameterDomains.size(); i++ )
+        for( Parameter p : parameters )
         {
-            domainIds[i] = parameterDomains.get( i ).getId();
+            if( !( p instanceof InputParameter ) )
+            {
+                continue;
+            }
+
+            if( domainIds.length <= index )
+            {
+                throw new BadFieldmlParameterException();
+            }
+
+            domainIds[index++] = p.getDomain().getId();
         }
     }
 
 
-    public Domain getInputParameterDomain( int parameterIndex )
+    public Domain getParameterDomain( int parameterIndex )
         throws FieldmlException
     {
-        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameterDomains.size() ) )
-        {
-            throw new BadFieldmlParameterException();
-        }
-
-        return parameterDomains.get( parameterIndex );
+        Parameter parameter = getParameter( parameterIndex );
+        
+        return parameter.getDomain();
     }
 
 
     public String getParameterName( int parameterIndex )
         throws FieldmlException
     {
-        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameterDomains.size() ) )
-        {
-            throw new BadFieldmlParameterException();
-        }
-
-        return parameterNames.get( parameterIndex );
+        Parameter parameter = getParameter( parameterIndex );
+        
+        return parameter.getName();
     }
 
 
@@ -174,23 +167,41 @@ public abstract class Field
     }
 
 
-    public int getParameterIndex( String name )
-    {
-        return parameterNames.indexOf( name );
-    }
-
-
     public ImmutableList<Domain> getSignature()
     {
         MutableArrayList<Domain> signature = new MutableArrayList<Domain>();
 
         signature.add( valueDomain );
 
-        for( Domain parameterDomain : parameterDomains )
+        for( Parameter parameter : parameters )
         {
-            signature.add( parameterDomain );
+            if( parameter instanceof InputParameter )
+            {
+                signature.add( parameter.getDomain() );
+            }
         }
 
         return signature;
+    }
+
+
+    public int getParameterType( int parameterIndex )
+        throws FieldmlException
+    {
+        Parameter parameter = getParameter( parameterIndex );
+        
+        return parameter.getType();
+    }
+
+
+    public Parameter getParameter( int parameterIndex )
+        throws FieldmlException
+    {
+        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameters.size() ) )
+        {
+            throw new BadFieldmlParameterException();
+        }
+
+        return parameters.get( parameterIndex );
     }
 }
