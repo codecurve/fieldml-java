@@ -28,9 +28,9 @@ public class FieldmlSaxHandler
 
     private ParsingState state;
 
-    private int currentId;
-    
     private final FieldML fieldml;
+    
+    int err;
 
     @Override
     public void startElement( String uri, String localName, String qName, Attributes attributes )
@@ -48,7 +48,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "index" ) == 0 )
                 {
-                    currentId = fieldml.FieldML_CreateDiscreteDomain( attributes.getValue( "name" ) );
+                    err = fieldml.FieldML_BeginDiscreteDomain( attributes.getValue( "name" ) );
                     state = ParsingState.DISCRETE_DOMAIN;
                 }
                 else
@@ -67,7 +67,7 @@ public class FieldmlSaxHandler
 
                 if( domainValue.compareTo( "real" ) == 0 )
                 {
-                    currentId = fieldml.FieldML_CreateContinuousDomain( attributes.getValue( "name" ) );
+                    err = fieldml.FieldML_BeginContinuousDomain( attributes.getValue( "name" ) );
                     state = ParsingState.CONTINUOUS_DOMAIN;
                 }
                 else
@@ -97,7 +97,7 @@ public class FieldmlSaxHandler
                     max = Double.parseDouble( attributes.getValue( "max" ) );
                 }
 
-                fieldml.FieldML_AddContinuousDomainComponent( currentId, attributes.getValue( "id" ), min, max );
+                fieldml.FieldML_AddContinuousDomainComponent( attributes.getValue( "id" ), min, max );
             }
         }
         else if( state == ParsingState.DISCRETE_DOMAIN )
@@ -126,6 +126,7 @@ public class FieldmlSaxHandler
         {
             if( qName.compareTo( "continuous_domain" ) == 0 )
             {
+                err = fieldml.FieldML_EndDomain();
                 state = ParsingState.NONE;
             }
         }
@@ -133,6 +134,7 @@ public class FieldmlSaxHandler
         {
             if( qName.compareTo( "discrete_domain" ) == 0 )
             {
+                err = fieldml.FieldML_EndDomain();
                 state = ParsingState.NONE;
             }
         }
@@ -143,7 +145,7 @@ public class FieldmlSaxHandler
                 // Parse a space (and/or comma?) separated list of values. Currently, only integer values are supported.
                 int[] values = getValues( characters.toString() );
                 
-                fieldml.FieldML_AddDiscreteDomainComponent( currentId, currentName, values, values.length ); 
+                fieldml.FieldML_AddDiscreteDomainComponent( currentName, values, values.length ); 
             }
         }
     }

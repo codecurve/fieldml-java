@@ -14,6 +14,8 @@ public abstract class ComputedField
     private final FieldParameters localFieldParameters;
 
     private boolean hasNonInputParameters;
+    
+    private final FieldmlObjectManager<Field> manager;
 
 
     public ComputedField( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
@@ -24,6 +26,8 @@ public abstract class ComputedField
         localFieldParameters = new FieldParameters();
 
         hasNonInputParameters = false;
+        
+        this.manager = manager;
     }
 
 
@@ -126,8 +130,8 @@ public abstract class ComputedField
 
         checkArgumentIndexes( signature, argumentIndexes );
 
-        addParameter( new IndirectParameter( parameterName, signature.get( 0 ), fieldParameterIndex,
-            fieldParameterComponentIndex, argumentIndexes ) );
+        addParameter( new IndirectParameter( manager, parameterName, signature.get( 0 ), fieldParameterIndex,
+            fieldParameterComponentIndex, argumentIndexes, getParameterCount() ) );
         localFieldParameters.addDomain( signature.get( 0 ) );
 
         hasNonInputParameters = true;

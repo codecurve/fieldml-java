@@ -5,8 +5,7 @@ import java.util.Arrays;
 import fieldml.FieldML;
 import fieldml.domain.Domain;
 import fieldml.exception.FieldmlException;
-import fieldml.implementation.FieldMLJava;
-import fieldml.value.Value;
+import fieldml.util.FieldmlObjectManager;
 
 public class IndirectParameter
     extends Parameter
@@ -16,16 +15,22 @@ public class IndirectParameter
     private final int fieldParameterComponentIndex;
 
     private final int[] parameterIndexes;
+    
+    private final int destinationIndex;
+    
+    private final FieldmlObjectManager<Field> manager;
 
 
-    public IndirectParameter( String name, Domain domain, int fieldParameterIndex, int fieldParameterComponentIndex,
-        int[] parameterIndexes )
+    public IndirectParameter( FieldmlObjectManager<Field> manager, String name, Domain domain, int fieldParameterIndex, int fieldParameterComponentIndex,
+        int[] parameterIndexes, int destinationIndex )
     {
         super( name, domain );
-
+        
         this.fieldParameterIndex = fieldParameterIndex;
         this.fieldParameterComponentIndex = fieldParameterComponentIndex;
         this.parameterIndexes = Arrays.copyOf( parameterIndexes, parameterIndexes.length );
+        this.destinationIndex = destinationIndex;
+        this.manager = manager;
     }
 
 
@@ -35,9 +40,9 @@ public class IndirectParameter
     {
         int fieldId = localParameters.values.get( fieldParameterIndex ).fieldIdValues[fieldParameterComponentIndex];
 
-        Field field = FieldMLJava.
+        Field field = manager.get( fieldId );
 
-        field.evaluate( localParameters, parameterIndexes, value );
+        field.evaluate( localParameters, parameterIndexes, localParameters.values.get( destinationIndex ) );
     }
 
 
