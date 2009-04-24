@@ -75,7 +75,7 @@ public class MultiplexedField
             throw new BadFieldmlParameterException();
         }
 
-        if( sourceField.getInputParameterDomain( 0 ).getComponentCount() != valueDomain.getComponentCount() )
+        if( sourceField.getParameterDomain( 0 ).getComponentCount() != valueDomain.getComponentCount() )
         {
             throw new BadFieldmlParameterException();
         }
@@ -89,7 +89,7 @@ public class MultiplexedField
         sourceValue = new Value( sourceField.valueDomain );
 
         sourceParameters = new FieldParameters();
-        sourceParameters.addDomain( sourceField.getInputParameterDomain( 0 ) );
+        sourceParameters.addDomain( sourceField.getParameterDomain( 0 ) );
     }
 
 }

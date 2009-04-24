@@ -117,7 +117,17 @@ public abstract class Field
 
     public int getInputParameterCount()
     {
-        return parameters.size();
+        int count = 0;
+
+        for( Parameter p : parameters )
+        {
+            if( p instanceof InputParameter )
+            {
+                count++;
+            }
+        }
+        
+        return count;
     }
 
 
@@ -163,7 +173,7 @@ public abstract class Field
 
     public int getParameterCount()
     {
-        return getInputParameterCount();
+        return parameters.size();
     }
 
 
