@@ -1,6 +1,6 @@
 package fieldml.field.component.evaluated;
 
-import fieldml.field.FieldParameters;
+import fieldml.field.FieldValues;
 
 public interface Evaluator
 {
@@ -25,5 +25,10 @@ public interface Evaluator
     //
     // For extra optimization, this could easily be a simple array, as it is a fixed-length
     // for any given configuration.
-    public double evaluate( FieldParameters parameters );
+
+    // Specifying an arbitrarily nested composition of binary operators on
+    // domain, constant and/or imported arguments seems non-trivial. Perhaps
+    // passing an array of argument specifiers, and an array of operator
+    // specifiers, and applying an RPN-style evaluation algorithm might work.
+    public double evaluate( FieldValues values );
 }

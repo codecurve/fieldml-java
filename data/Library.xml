@@ -39,7 +39,7 @@
     <component id="node4d2ds1ds2" />
   </continuous_domain>
 
-  <field id="library::bilinear_lagrange" value_domain="library::bilinear_interpolation_parameters">
+  <computed_field id="library::bilinear_lagrange" value_domain="library::bilinear_interpolation_parameters">
     <parameter id="xi" domain="library::unit_square" />
     
     <evaluate_component id="node1">
@@ -81,15 +81,15 @@
         <parameter_value id="xi" component="xi2" />
       </multiply>
     </evaluate_component>
-  </field>
+  </computed_field>
   
-  <field id="library::bilinear_interpolation" value_domain="library::infinite_line">
+  <computed_field id="library::bilinear_interpolation" value_domain="library::infinite_line">
     <parameter id="parameters" domain="library::bilinear_interpolation_parameters" />
     <parameter id="xi" domain="library::unit_square" />
     
-    <derived_parameter id="phi" field="library::bilinear_lagrange">
+    <derived_value id="phi" field="library::bilinear_lagrange">
       <parameter id="xi" />
-    </derived_parameter>
+    </derived_value>
     
     <evaluate_component id="value">
       <dot_product>
@@ -97,9 +97,9 @@
         <parameter_vector id="phi" />
       </dot_product>
     </evaluate_component>
-  </field>
+  </computed_field>
   
-  <field id="library::bilinear_dot_product" value_domain="library::infinite_line">
+  <computed_field id="library::bilinear_dot_product" value_domain="library::infinite_line">
     <parameter id="parameter_vector" domain="library::bilinear_interpolation_parameters" />
     <parameter id="phi_vector" domain="library::bilinear_interpolation_parameters" />
     
@@ -109,6 +109,6 @@
         <parameter_vector id="phi_vector" />
       </dot_product>
     </evaluate_component>
-  </field>
+  </computed_field>
     
 </fieldml>

@@ -9,11 +9,11 @@ import fieldml.domain.ContinuousDomain;
 import fieldml.domain.DiscreteIndexDomain;
 import fieldml.domain.Domain;
 import fieldml.exception.FieldmlException;
-import fieldml.field.ComputedField;
-import fieldml.field.ComputedIndexField;
-import fieldml.field.ComputedRealField;
+import fieldml.field.DerivedField;
+import fieldml.field.DerivedIndexField;
+import fieldml.field.DerivedRealField;
 import fieldml.field.Field;
-import fieldml.field.FieldParameters;
+import fieldml.field.FieldValues;
 import fieldml.field.MappedField;
 import fieldml.field.MappedIndexField;
 import fieldml.field.MappedRealField;
@@ -30,7 +30,7 @@ public class FieldMLJava
 
     private final FieldmlObjectManager<Field> fieldManager;
 
-    private final FieldmlObjectManager<FieldParameters> cacheManager;
+    private final FieldmlObjectManager<FieldValues> cacheManager;
 
     /**
      * The domain currently being defined. Only one 'partially-defined' object
@@ -53,7 +53,7 @@ public class FieldMLJava
     {
         domainManager = new FieldmlObjectManager<Domain>();
         fieldManager = new FieldmlObjectManager<Field>();
-        cacheManager = new FieldmlObjectManager<FieldParameters>();
+        cacheManager = new FieldmlObjectManager<FieldValues>();
         outputValues = new HashMap<Field, Value>();
 
         initialParameterIndexes = new int[32];
@@ -146,7 +146,7 @@ public class FieldMLJava
             {
                 return FieldML.ERR_INVALID_CALL;
             }
-            
+
             ContinuousDomain domain = domainManager.getByClass( currentDomain.getId(), ContinuousDomain.class );
 
             return domain.addComponent( componentName, min, max );
@@ -180,7 +180,7 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_BeginField( String name, int valueDomainId )
+    public int FieldML_BeginDerivedField( String name, int valueDomainId )
     {
         // We could use domains to generate correctly-typed fields here without
         // having to use instaceofs.
@@ -197,7 +197,7 @@ public class FieldMLJava
             {
                 DiscreteIndexDomain discreteDomain = (DiscreteIndexDomain)domain;
 
-                currentField = new ComputedIndexField( fieldManager, discreteDomain, name );
+                currentField = new DerivedIndexField( fieldManager, discreteDomain, name );
 
                 outputValues.put( currentField, new Value( discreteDomain ) );
 
@@ -217,7 +217,7 @@ public class FieldMLJava
                 }
                 else
                 {
-                    currentField = new ComputedRealField( fieldManager, continuousDomain, name );
+                    currentField = new DerivedRealField( fieldManager, continuousDomain, name );
                 }
 
                 outputValues.put( currentField, new Value( continuousDomain ) );
@@ -234,8 +234,8 @@ public class FieldMLJava
             return e.errorCode;
         }
     }
-    
-    
+
+
     @Override
     public int FieldML_EndField()
     {
@@ -380,7 +380,7 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddInputParameter( String parameterName, int domainId )
+    public int FieldML_AddParameter( String parameterName, int domainId )
     {
         try
         {
@@ -389,11 +389,11 @@ public class FieldMLJava
                 return FieldML.ERR_INVALID_CALL;
             }
 
-            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
+            DerivedField field = fieldManager.getByClass( currentField.getId(), DerivedField.class );
 
             Domain domain = domainManager.get( domainId );
 
-            return field.addInputParameter( parameterName, domain );
+            return field.addParameter( parameterName, domain );
         }
         catch( FieldmlException e )
         {
@@ -403,7 +403,7 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddDerivedParameter( String parameterName, int parameterFieldId, int[] argumentIndexes )
+    public int FieldML_AddFieldValue( String valueName, int fieldId, int[] parameterIndexes )
     {
         try
         {
@@ -412,11 +412,11 @@ public class FieldMLJava
                 return FieldML.ERR_INVALID_CALL;
             }
 
-            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
+            DerivedField field = fieldManager.getByClass( currentField.getId(), DerivedField.class );
 
-            Field parameterField = fieldManager.get( parameterFieldId );
+            Field parameterField = fieldManager.get( fieldId );
 
-            return field.addDerivedParameter( parameterName, parameterField, argumentIndexes );
+            return field.addFieldValue( valueName, parameterField, parameterIndexes );
         }
         catch( FieldmlException e )
         {
@@ -426,8 +426,8 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_AddDerivedParameter( String parameterName, int fieldParameterIndex,
-        int fieldParameterComponentIndex, int[] argumentIndexes )
+    public int FieldML_AddIndirectFieldValue( String valueName, int fieldValueIndex, int fieldValueComponentIndex,
+        int[] parameterIndexes )
     {
         try
         {
@@ -436,10 +436,9 @@ public class FieldMLJava
                 return FieldML.ERR_INVALID_CALL;
             }
 
-            ComputedField field = fieldManager.getByClass( currentField.getId(), ComputedField.class );
+            DerivedField field = fieldManager.getByClass( currentField.getId(), DerivedField.class );
 
-            return field
-                .addIndirectParameter( parameterName, fieldParameterIndex, fieldParameterComponentIndex, argumentIndexes );
+            return field.addIndirectFieldValue( valueName, fieldValueIndex, fieldValueComponentIndex, parameterIndexes );
         }
         catch( FieldmlException e )
         {
@@ -449,13 +448,20 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetInputParameterCount( int fieldId )
+    public int FieldML_DefineComponent( int componentIndex, int valueIndex, int valueComponentIndex )
     {
         try
         {
-            Field field = fieldManager.get( fieldId );
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
 
-            return field.getInputParameterCount();
+            DerivedField field = fieldManager.getByClass( currentField.getId(), DerivedField.class );
+
+            field.defineComponent( componentIndex, valueIndex, valueComponentIndex );
+            
+            return FieldML.NO_ERROR;
         }
         catch( FieldmlException e )
         {
@@ -465,13 +471,52 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetInputParameterDomains( int fieldId, int[] domainIds )
+    public int FieldML_DefineNamedComponent( int componentIndex, int valueIndex, int nameValueIndex, int nameValueComponentIndex )
+    {
+        try
+        {
+            if( ( currentField == null ) || ( currentDomain != null ) )
+            {
+                return FieldML.ERR_INVALID_CALL;
+            }
+
+            DerivedField field = fieldManager.getByClass( currentField.getId(), DerivedField.class );
+
+            field.defineNamedComponent( componentIndex, valueIndex, nameValueIndex, nameValueComponentIndex );
+            
+            return FieldML.NO_ERROR;
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    @Override
+    public int FieldML_GetValueCount( int fieldId )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
 
-            field.getInputParameterDomains( domainIds );
+            return field.getValueCount();
+        }
+        catch( FieldmlException e )
+        {
+            return e.errorCode;
+        }
+    }
+
+
+    @Override
+    public int FieldML_GetParameterDomains( int fieldId, int[] domainIds )
+    {
+        try
+        {
+            Field field = fieldManager.get( fieldId );
+
+            field.getParameterDomains( domainIds );
 
             return NO_ERROR;
         }
@@ -494,7 +539,7 @@ public class FieldMLJava
                 domains.add( domainManager.get( domainIds[i] ) );
             }
 
-            FieldParameters cache = new FieldParameters( cacheManager, domains );
+            FieldValues cache = new FieldValues( cacheManager, domains );
 
             return cache.getId();
         }
@@ -521,7 +566,7 @@ public class FieldMLJava
         {
             Field field = fieldManager.get( fieldId );
 
-            FieldParameters cache = cacheManager.get( cacheId );
+            FieldValues cache = cacheManager.get( cacheId );
 
             Value output = outputValues.get( field );
 
@@ -545,7 +590,7 @@ public class FieldMLJava
         {
             Field field = fieldManager.get( fieldId );
 
-            FieldParameters cache = cacheManager.get( cacheId );
+            FieldValues cache = cacheManager.get( cacheId );
 
             Value output = outputValues.get( field );
 
@@ -568,7 +613,7 @@ public class FieldMLJava
     {
         try
         {
-            FieldParameters cache = cacheManager.get( cacheId );
+            FieldValues cache = cacheManager.get( cacheId );
 
             double[] destination = cache.values.get( parameterNumber ).realValues;
             if( destination == null )
@@ -596,7 +641,7 @@ public class FieldMLJava
     {
         try
         {
-            FieldParameters cache = cacheManager.get( cacheId );
+            FieldValues cache = cacheManager.get( cacheId );
 
             int[] destination = cache.values.get( parameterNumber ).indexValues;
             if( destination == null )
@@ -757,16 +802,16 @@ public class FieldMLJava
             return e.errorCode;
         }
     }
-    
-    
+
+
     @Override
-    public int FieldML_GetParameterType( int fieldId, int parameterIndex )
+    public int FieldML_GetValueType( int fieldId, int parameterIndex )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
 
-            return field.getParameterType( parameterIndex );
+            return field.getValueType( parameterIndex );
         }
         catch( FieldmlException e )
         {
@@ -776,13 +821,13 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetDerivedParameterField( int fieldId, int derivedParameterIndex )
+    public int FieldML_GetFieldValueField( int fieldId, int derivedParameterIndex )
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+            DerivedField field = fieldManager.getByClass( fieldId, DerivedField.class );
 
-            return field.getDerivedParameterField( derivedParameterIndex );
+            return field.getFieldValueField( derivedParameterIndex );
         }
         catch( FieldmlException e )
         {
@@ -792,13 +837,13 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetParameterDomain( int fieldId, int parameterIndex )
+    public int FieldML_GetValueDomain( int fieldId, int parameterIndex )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
 
-            Domain domain = field.getParameterDomain( parameterIndex );
+            Domain domain = field.getValueDomain( parameterIndex );
 
             return domain.getId();
         }
@@ -810,13 +855,13 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetParameterName( int fieldId, int parameterIndex, char[] name )
+    public int FieldML_GetValueName( int fieldId, int parameterIndex, char[] name )
     {
         try
         {
             Field field = fieldManager.get( fieldId );
 
-            String parameterName = field.getParameterName( parameterIndex );
+            String parameterName = field.getValueName( parameterIndex );
 
             StringUtils.stringToChars( name, parameterName );
 
@@ -864,13 +909,13 @@ public class FieldMLJava
 
 
     @Override
-    public int FieldML_GetDerivedParameterArguments( int fieldId, int derivedParameterIndex, int[] argumentIndexes )
+    public int FieldML_GetFieldValueArguments( int fieldId, int derivedParameterIndex, int[] argumentIndexes )
     {
         try
         {
-            ComputedField field = fieldManager.getByClass( fieldId, ComputedField.class );
+            DerivedField field = fieldManager.getByClass( fieldId, DerivedField.class );
 
-            return field.getDerivedParameterArguments( derivedParameterIndex, argumentIndexes );
+            return field.getFieldValueParameters( derivedParameterIndex, argumentIndexes );
         }
         catch( FieldmlException e )
         {

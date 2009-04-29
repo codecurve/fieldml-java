@@ -5,8 +5,8 @@ import java.util.Arrays;
 import fieldml.FieldML;
 import fieldml.exception.FieldmlException;
 
-public class DirectParameter
-    extends Parameter
+public class FieldEvaluator
+    extends Evaluator
 {
     private final Field field;
 
@@ -15,21 +15,21 @@ public class DirectParameter
     private final int destinationIndex;
 
 
-    public DirectParameter( String name, Field field, int[] fieldParameterIndexes, int destinationIndex )
+    public FieldEvaluator( String name, Field field, int[] fieldParameterIndexes, int destinationIndex )
     {
         super( name, field.valueDomain );
 
         this.field = field;
-        this.fieldParameterIndexes = Arrays.copyOf( fieldParameterIndexes, field.getInputParameterCount() );
+        this.fieldParameterIndexes = Arrays.copyOf( fieldParameterIndexes, field.getParameterCount() );
         this.destinationIndex = destinationIndex;
     }
 
 
     @Override
-    public void evaluate( FieldParameters inputParameters, int[] argumentIndexes, FieldParameters localParameters )
+    public void evaluate( FieldValues inputValues, int[] inputParameterIndexes, FieldValues localValues )
         throws FieldmlException
     {
-        field.evaluate( localParameters, fieldParameterIndexes, localParameters.values.get( destinationIndex ) );
+        field.evaluate( localValues, fieldParameterIndexes, localValues.values.get( destinationIndex ) );
     }
 
 
@@ -48,6 +48,6 @@ public class DirectParameter
     @Override
     public int getType()
     {
-        return FieldML.PT_DIRECT_PARAMETER;
+        return FieldML.PT_DIRECT_VALUE;
     }
 }

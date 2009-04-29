@@ -21,8 +21,41 @@
     <!--
       Perhaps just fold these into the mapped_field tag? 
      -->
-    <mapping_parameter domain="mesh.element" component="id"/>
+    <mapping domain="mesh.element" component="id"/>
     
     <read_map file="filename.bin" format="raw" offset="0" padding="0" key_format="le_16bit" value_format="le_32bit"/>
   </mapped_field>
+  
+  <!--
+    Composite field obtained by combining entire fields.
+    
+    NOT YET IMPLEMENTED
+    
+    Rather than defining itself on a per-component, this field defines itself
+    as a simple combination of other fields. All fields being combined in this
+    way must have the same value domain.
+    
+    composite_field = fieldA - ( fieldB + fieldC )
+   -->
+  <composite_field id="composite_field" value_domain="some_domain">
+    <parameter id="parameter1" domain="parameter1_domain" />
+    <parameter id="parameter2" domain="parameter2_domain" />
+    <parameter id="parameter3" domain="parameter3_domain" />
+
+    <subtract>
+      <field_operand field="fieldA">
+        <parameter id="parameter1" />
+        <parameter id="parameter2" />
+      </field_operand>
+      <add>
+        <field_operand field="fieldB">
+          <parameter id="parameter1" />
+          <parameter id="parameter3" />
+        </field_operand>
+        <field_operand field="fieldC">
+          <parameter id="parameter3" />
+        </field_operand>
+      </add>
+    </subtract>
+  </composite_field>
 </fieldml>

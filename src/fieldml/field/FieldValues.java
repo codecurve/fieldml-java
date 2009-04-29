@@ -12,7 +12,7 @@ import fieldml.value.Value;
  * This class essentially maintains a list of dynamic casts, allowing clients to access values by index without having to use
  * instanceof or casting.
  */
-public class FieldParameters
+public class FieldValues
     implements FieldmlObject
 {
     public final ArrayList<Value> values;
@@ -20,7 +20,7 @@ public class FieldParameters
     private final int id;
 
 
-    public FieldParameters( FieldmlObjectManager<FieldParameters> manager, ArrayList<Domain> domains )
+    public FieldValues( FieldmlObjectManager<FieldValues> manager, ArrayList<Domain> domains )
         throws FieldmlException
     {
         values = new ArrayList<Value>();
@@ -34,7 +34,7 @@ public class FieldParameters
     }
     
     
-    FieldParameters()
+    FieldValues()
     {
         values = new ArrayList<Value>();
 

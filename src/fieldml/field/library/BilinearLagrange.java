@@ -4,8 +4,8 @@ import fieldml.domain.Domain;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.field.Field;
-import fieldml.field.FieldParameters;
-import fieldml.field.InputParameter;
+import fieldml.field.FieldValues;
+import fieldml.field.ParameterEvaluator;
 import fieldml.field.RealField;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
@@ -66,19 +66,19 @@ public class BilinearLagrange
     {
         super( manager, "library::bilinear_lagrange", domainManager.get( "library::bilinear_interpolation_parameters" ) );
 
-        addParameter( new InputParameter( "xi", domainManager.get( "library::unit_square" ), 0 ) );
+        addEvaluator( new ParameterEvaluator( "xi", domainManager.get( "library::unit_square" ), 0 ) );
     }
 
 
     @Override
-    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldValues values, int[] valueIndexes, Value value )
         throws FieldmlException
     {
-        if( parameterIndexes.length < 1 )
+        if( valueIndexes.length < 1 )
         {
             throw new BadFieldmlParameterException();
         }
-        Value parameter0 = parameters.values.get( parameterIndexes[0] );
+        Value parameter0 = values.values.get( valueIndexes[0] );
         
         if( ( parameter0.realValues == null ) || ( parameter0.realValues.length < 2 ) ||
             ( value.realValues == null ) || ( value.realValues.length < 4 ) )

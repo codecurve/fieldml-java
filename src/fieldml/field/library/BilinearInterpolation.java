@@ -4,8 +4,8 @@ import fieldml.domain.Domain;
 import fieldml.exception.BadFieldmlParameterException;
 import fieldml.exception.FieldmlException;
 import fieldml.field.Field;
-import fieldml.field.FieldParameters;
-import fieldml.field.InputParameter;
+import fieldml.field.FieldValues;
+import fieldml.field.ParameterEvaluator;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
@@ -32,21 +32,21 @@ public class BilinearInterpolation
     {
         super( manager, "library::bilinear_lagrange", domainManager.get( "library::bilinear_interpolation_parameters" ) );
 
-        addParameter( new InputParameter( "parameters", domainManager.get( "library::bilinear_interpolation_parameters" ), 0 ) );
-        addParameter( new InputParameter( "phi", domainManager.get( "library::unit_square" ), 1 ) );
+        addEvaluator( new ParameterEvaluator( "parameters", domainManager.get( "library::bilinear_interpolation_parameters" ), 0 ) );
+        addEvaluator( new ParameterEvaluator( "phi", domainManager.get( "library::unit_square" ), 1 ) );
     }
 
 
     @Override
-    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldValues values, int[] valueIndexes, Value value )
         throws FieldmlException
     {
-        if( parameterIndexes.length < 2 )
+        if( valueIndexes.length < 2 )
         {
             throw new BadFieldmlParameterException();
         }
-        Value parameter0 = parameters.values.get( parameterIndexes[0] );
-        Value parameter1 = parameters.values.get( parameterIndexes[1] );
+        Value parameter0 = values.values.get( valueIndexes[0] );
+        Value parameter1 = values.values.get( valueIndexes[1] );
         
         if( ( parameter0.realValues == null ) || ( parameter0.realValues.length < 4 ) ||
             ( parameter1.realValues == null ) || ( parameter1.realValues.length < 2 ) ||

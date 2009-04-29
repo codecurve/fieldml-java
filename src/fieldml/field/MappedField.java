@@ -24,7 +24,7 @@ public abstract class MappedField
     public void setMappingParameterDomain( DiscreteIndexDomain domain, int componentIndex )
         throws FieldmlException
     {
-        if( getParameterCount() != 0 )
+        if( getValueCount() != 0 )
         {
             // We could allow the user to just change the parameter domain.
             throw new BadFieldmlParameterException();
@@ -34,7 +34,7 @@ public abstract class MappedField
             throw new BadFieldmlParameterException();
         }
 
-        addParameter( new InputParameter( "mapping parameter", domain, 0 ) );
+        addEvaluator( new ParameterEvaluator( "mapping parameter", domain, 0 ) );
 
         keyComponentIndex = componentIndex;
     }
@@ -59,6 +59,6 @@ public abstract class MappedField
             throw new BadFieldmlParameterException();
         }
 
-        return getParameterDomain( 0 );
+        return getValueDomain( 0 );
     }
 }

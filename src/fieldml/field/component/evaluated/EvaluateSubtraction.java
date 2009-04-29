@@ -1,6 +1,6 @@
 package fieldml.field.component.evaluated;
 
-import fieldml.field.FieldParameters;
+import fieldml.field.FieldValues;
 
 public class EvaluateSubtraction
     implements Evaluator
@@ -55,7 +55,7 @@ public class EvaluateSubtraction
 
 
     @Override
-    public double evaluate( FieldParameters parameters )
+    public double evaluate( FieldValues values )
     {
         if( value1 == null )
         {
@@ -65,18 +65,18 @@ public class EvaluateSubtraction
             }
             else
             {
-                return constValue1 - value2.evaluate( parameters );
+                return constValue1 - value2.evaluate( values );
             }
         }
         else
         {
             if( value2 == null )
             {
-                return value1.evaluate( parameters ) - constValue2;
+                return value1.evaluate( values ) - constValue2;
             }
             else
             {
-                return value1.evaluate( parameters ) - value2.evaluate( parameters );
+                return value1.evaluate( values ) - value2.evaluate( values );
             }
         }
     }

@@ -7,8 +7,9 @@ import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 import fieldml.value.Value;
 
+//NOTE: Experimental class. Not currently in use.
 public class MultiplexedField
-    extends ComputedField
+    extends DerivedField
 {
     private MappedField sourceField;
 
@@ -20,7 +21,7 @@ public class MultiplexedField
 
     private final int sourceFieldParameterIndexes[];
 
-    private FieldParameters sourceParameters;
+    private FieldValues sourceParameters;
 
     // HACK!
     private boolean isReal;
@@ -36,7 +37,7 @@ public class MultiplexedField
     }
 
 
-    void evaluateComponents( FieldParameters parameters, Value value )
+    void evaluateComponents( FieldValues parameters, Value value )
         throws FieldmlException
     {
         // TODO Parameter checking
@@ -75,7 +76,7 @@ public class MultiplexedField
             throw new BadFieldmlParameterException();
         }
 
-        if( sourceField.getParameterDomain( 0 ).getComponentCount() != valueDomain.getComponentCount() )
+        if( sourceField.getValueDomain( 0 ).getComponentCount() != valueDomain.getComponentCount() )
         {
             throw new BadFieldmlParameterException();
         }
@@ -88,8 +89,23 @@ public class MultiplexedField
 
         sourceValue = new Value( sourceField.valueDomain );
 
-        sourceParameters = new FieldParameters();
-        sourceParameters.addDomain( sourceField.getParameterDomain( 0 ) );
+        sourceParameters = new FieldValues();
+        sourceParameters.addDomain( sourceField.getValueDomain( 0 ) );
     }
 
+
+    @Override
+    public void defineComponent( int componentIndex, int valueIndex, int valueComponentIndex )
+        throws FieldmlException
+    {
+        // TODO Auto-generated method stub
+    }
+
+
+    @Override
+    public void defineNamedComponent( int componentIndex, int valueIndex, int nameValueIndex, int valueComponentIndex )
+        throws FieldmlException
+    {
+        // TODO Auto-generated method stub
+    }
 }
