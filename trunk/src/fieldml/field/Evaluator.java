@@ -3,14 +3,14 @@ package fieldml.field;
 import fieldml.domain.Domain;
 import fieldml.exception.FieldmlException;
 
-public abstract class Parameter
+public abstract class Evaluator
 {
     private final String name;
 
     private final Domain domain;
 
 
-    public Parameter( String name, Domain domain )
+    public Evaluator( String name, Domain domain )
     {
         this.name = name;
         this.domain = domain;
@@ -29,7 +29,7 @@ public abstract class Parameter
     }
 
 
-    public abstract void evaluate( FieldParameters inputParameters, int[] argumentIndexes, FieldParameters localParameters )
+    public abstract void evaluate( FieldValues inputValues, int[] argumentIndexes, FieldValues localValues )
         throws FieldmlException;
 
 

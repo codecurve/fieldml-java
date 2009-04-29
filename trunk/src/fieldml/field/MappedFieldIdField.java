@@ -51,7 +51,7 @@ public class MappedFieldIdField
 
 
     @Override
-    public void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public void evaluate( FieldValues parameters, int[] parameterIndexes, Value value )
         throws FieldmlException
     {
         if( parameterIndexes.length < 1 )

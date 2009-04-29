@@ -7,12 +7,12 @@ import fieldml.domain.Domain;
 import fieldml.exception.FieldmlException;
 import fieldml.util.FieldmlObjectManager;
 
-public class IndirectParameter
-    extends Parameter
+public class IndirectFieldEvaluator
+    extends Evaluator
 {
-    private final int fieldParameterIndex;
+    private final int fieldValueIndex;
 
-    private final int fieldParameterComponentIndex;
+    private final int fieldValueComponentIndex;
 
     private final int[] parameterIndexes;
     
@@ -21,13 +21,13 @@ public class IndirectParameter
     private final FieldmlObjectManager<Field> manager;
 
 
-    public IndirectParameter( FieldmlObjectManager<Field> manager, String name, Domain domain, int fieldParameterIndex, int fieldParameterComponentIndex,
+    public IndirectFieldEvaluator( FieldmlObjectManager<Field> manager, String name, Domain domain, int fieldValueIndex, int fieldValueComponentIndex,
         int[] parameterIndexes, int destinationIndex )
     {
         super( name, domain );
         
-        this.fieldParameterIndex = fieldParameterIndex;
-        this.fieldParameterComponentIndex = fieldParameterComponentIndex;
+        this.fieldValueIndex = fieldValueIndex;
+        this.fieldValueComponentIndex = fieldValueComponentIndex;
         this.parameterIndexes = Arrays.copyOf( parameterIndexes, parameterIndexes.length );
         this.destinationIndex = destinationIndex;
         this.manager = manager;
@@ -35,14 +35,14 @@ public class IndirectParameter
 
 
     @Override
-    public void evaluate( FieldParameters inputParameters, int[] argumentIndexes, FieldParameters localParameters )
+    public void evaluate( FieldValues inputValues, int[] argumentIndexes, FieldValues localValues )
         throws FieldmlException
     {
-        int fieldId = localParameters.values.get( fieldParameterIndex ).fieldIdValues[fieldParameterComponentIndex];
+        int fieldId = localValues.values.get( fieldValueIndex ).fieldIdValues[fieldValueComponentIndex];
 
         Field field = manager.get( fieldId );
 
-        field.evaluate( localParameters, parameterIndexes, localParameters.values.get( destinationIndex ) );
+        field.evaluate( localValues, parameterIndexes, localValues.values.get( destinationIndex ) );
     }
 
 
@@ -55,6 +55,6 @@ public class IndirectParameter
     @Override
     public int getType()
     {
-        return FieldML.PT_INDIRECT_PARAMETER;
+        return FieldML.PT_INDIRECT_VALUE;
     }
 }

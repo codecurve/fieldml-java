@@ -53,26 +53,26 @@ public class FieldMLJavaFieldTest
     }
 
 
-    public void testFieldML_AddInputParameter()
+    public void testFieldML_AddParameter()
     {
         // Create a field on a continuous domain.
-        int err = fieldml.FieldML_BeginField( testFieldName1, continuousDomainId );
+        int err = fieldml.FieldML_BeginDerivedField( testFieldName1, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
 
         // Add an input parameter.
-        int index = fieldml.FieldML_AddInputParameter( testParameterName1, discreteDomainId );
+        int index = fieldml.FieldML_AddParameter( testParameterName1, discreteDomainId );
         assertEquals( 0, index );
 
         // Add an input parameter with an unknown domain.
-        err = fieldml.FieldML_AddInputParameter( testParameterName2, discreteDomainId + 1000 );
+        err = fieldml.FieldML_AddParameter( testParameterName2, discreteDomainId + 1000 );
         assertEquals( FieldML.ERR_NO_SUCH_OBJECT, err );
 
         // Add an input parameter with a duplicate name.
-        err = fieldml.FieldML_AddInputParameter( testParameterName1, discreteDomainId );
+        err = fieldml.FieldML_AddParameter( testParameterName1, discreteDomainId );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Add a second input parameter.
-        int index2 = fieldml.FieldML_AddInputParameter( testParameterName2, discreteDomainId );
+        int index2 = fieldml.FieldML_AddParameter( testParameterName2, discreteDomainId );
         assertEquals( 1, index2 );
         
         int fieldId = fieldml.FieldML_EndField();
@@ -80,24 +80,24 @@ public class FieldMLJavaFieldTest
     }
 
 
-    public void testFieldML_AddDerivedParameter()
+    public void testFieldML_AddFieldValue()
     {
         // Create a field on a discrete domain.
-        int err = fieldml.FieldML_BeginField( testFieldName2, discreteDomainId );
+        int err = fieldml.FieldML_BeginDerivedField( testFieldName2, discreteDomainId );
         assertEquals( FieldML.NO_ERROR, err );
-        err = fieldml.FieldML_AddInputParameter( testParameterName1, continuousDomainId );
+        err = fieldml.FieldML_AddParameter( testParameterName1, continuousDomainId );
         assertTrue( err >= 0 );
-        err = fieldml.FieldML_AddInputParameter( testParameterName2, continuousDomainId );
+        err = fieldml.FieldML_AddParameter( testParameterName2, continuousDomainId );
         assertTrue( err >= 0 );
         int fieldId2 = fieldml.FieldML_EndField();
         assertTrue( fieldId2 > 0 );
 
         // Create a field on a continuous domain.
-        err = fieldml.FieldML_BeginField( testFieldName1, continuousDomainId );
+        err = fieldml.FieldML_BeginDerivedField( testFieldName1, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
-        int index1 = fieldml.FieldML_AddInputParameter( testParameterName1, discreteDomainId );
+        int index1 = fieldml.FieldML_AddParameter( testParameterName1, discreteDomainId );
         assertTrue( index1 >= 0 );
-        int index2 = fieldml.FieldML_AddInputParameter( testParameterName2, continuousDomainId );
+        int index2 = fieldml.FieldML_AddParameter( testParameterName2, continuousDomainId );
         assertTrue( index2 >= 0 );
 
         int[] indexes = new int[64];
@@ -106,31 +106,31 @@ public class FieldMLJavaFieldTest
         // field.
         indexes[0] = 0;
         indexes[1] = 0;
-        err = fieldml.FieldML_AddDerivedParameter( testParameterName2, fieldId2, indexes );
+        err = fieldml.FieldML_AddFieldValue( testParameterName2, fieldId2, indexes );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Add a derived parameter with invalid indexes.
         indexes[0] = 0;
         indexes[1] = 5;
-        err = fieldml.FieldML_AddDerivedParameter( testParameterName2, fieldId2, indexes );
+        err = fieldml.FieldML_AddFieldValue( testParameterName2, fieldId2, indexes );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Add a derived parameter with an invalid field id.
         indexes[0] = 1;
         indexes[1] = 1;
-        err = fieldml.FieldML_AddDerivedParameter( testParameterName2, fieldId2 + 1000, indexes );
+        err = fieldml.FieldML_AddFieldValue( testParameterName2, fieldId2 + 1000, indexes );
         assertEquals( FieldML.ERR_NO_SUCH_OBJECT, err );
 
         // Add a derived parameter with a duplicate name.
         indexes[0] = 1;
         indexes[1] = 1;
-        err = fieldml.FieldML_AddDerivedParameter( testParameterName1, fieldId2, indexes );
+        err = fieldml.FieldML_AddFieldValue( testParameterName1, fieldId2, indexes );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Add a derived parameter with correct parameters for the field.
         indexes[0] = 1;
         indexes[1] = 1;
-        err = fieldml.FieldML_AddDerivedParameter( testParameterName3, fieldId2, indexes );
+        err = fieldml.FieldML_AddFieldValue( testParameterName3, fieldId2, indexes );
         assertEquals( 2, err );
 
         int fieldId1 = fieldml.FieldML_EndField();
@@ -138,22 +138,22 @@ public class FieldMLJavaFieldTest
     }
 
 
-    public void testFieldML_GetDerivedParameter()
+    public void testFieldML_GetFieldValue()
     {
         // Create a second field on a discrete domain.
-        int err = fieldml.FieldML_BeginField( testFieldName2, discreteDomainId );
+        int err = fieldml.FieldML_BeginDerivedField( testFieldName2, discreteDomainId );
         assertEquals( FieldML.NO_ERROR, err );
-        err = fieldml.FieldML_AddInputParameter( testParameterName1, continuousDomainId );
+        err = fieldml.FieldML_AddParameter( testParameterName1, continuousDomainId );
         assertTrue( err >= 0 );
-        err = fieldml.FieldML_AddInputParameter( testParameterName2, continuousDomainId );
+        err = fieldml.FieldML_AddParameter( testParameterName2, continuousDomainId );
         assertTrue( err >= 0 );
         int fieldId2 = fieldml.FieldML_EndField();
         assertTrue( fieldId2 > 0 );
 
         // Create a field on a continuous domain with derived fields.
-        err = fieldml.FieldML_BeginField( testFieldName1, continuousDomainId );
+        err = fieldml.FieldML_BeginDerivedField( testFieldName1, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
-        int index1 = fieldml.FieldML_AddInputParameter( testParameterName1, continuousDomainId );
+        int index1 = fieldml.FieldML_AddParameter( testParameterName1, continuousDomainId );
         assertTrue( index1 >= 0 );
 
         int[] indexes = new int[64];
@@ -161,44 +161,44 @@ public class FieldMLJavaFieldTest
         // Add two derived parameters.
         indexes[0] = index1;
         indexes[1] = index1;
-        int index2 = fieldml.FieldML_AddDerivedParameter( testParameterName2, fieldId2, indexes );
+        int index2 = fieldml.FieldML_AddFieldValue( testParameterName2, fieldId2, indexes );
         assertTrue( index2 >= 0 );
 
         int fieldId1 = fieldml.FieldML_EndField();
         assertTrue( fieldId1 > 0 );
 
         // Get the field for an input parameter.
-        err = fieldml.FieldML_GetDerivedParameterField( fieldId1, index1 );
+        err = fieldml.FieldML_GetFieldValueField( fieldId1, index1 );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Get the field for a parameter of a non-existant field.
-        err = fieldml.FieldML_GetDerivedParameterField( fieldId1 + 1000, index2 );
+        err = fieldml.FieldML_GetFieldValueField( fieldId1 + 1000, index2 );
         assertEquals( FieldML.ERR_NO_SUCH_OBJECT, err );
 
         // Get the field for a non-existant parameter.
-        err = fieldml.FieldML_GetDerivedParameterField( fieldId1, index1 + 1000 );
+        err = fieldml.FieldML_GetFieldValueField( fieldId1, index1 + 1000 );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Get the field for a derived parameter.
-        int id = fieldml.FieldML_GetDerivedParameterField( fieldId1, index2 );
+        int id = fieldml.FieldML_GetFieldValueField( fieldId1, index2 );
         assertEquals( fieldId2, id );
 
         // Get the indexes for an input parameter.
-        err = fieldml.FieldML_GetDerivedParameterArguments( fieldId1, index1, indexes );
+        err = fieldml.FieldML_GetFieldValueArguments( fieldId1, index1, indexes );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Get the indexes for a parameter of a non-existant field.
-        err = fieldml.FieldML_GetDerivedParameterArguments( fieldId1 + 1000, index2, indexes );
+        err = fieldml.FieldML_GetFieldValueArguments( fieldId1 + 1000, index2, indexes );
         assertEquals( FieldML.ERR_NO_SUCH_OBJECT, err );
 
         // Get the indexes for a non-existant parameter.
-        err = fieldml.FieldML_GetDerivedParameterArguments( fieldId1, index1 + 1000, indexes );
+        err = fieldml.FieldML_GetFieldValueArguments( fieldId1, index1 + 1000, indexes );
         assertEquals( FieldML.ERR_BAD_PARAMETER, err );
 
         // Get the indexes for a derived parameter.
         indexes[0] = index1 + 255;
         indexes[1] = index1 + 255;
-        err = fieldml.FieldML_GetDerivedParameterArguments( fieldId1, index2, indexes );
+        err = fieldml.FieldML_GetFieldValueArguments( fieldId1, index2, indexes );
         assertEquals( 2, err );
         assertEquals( index1, indexes[0] );
         assertEquals( index1, indexes[1] );
@@ -250,7 +250,7 @@ public class FieldMLJavaFieldTest
         assertTrue( fieldId1 > 0 );
 
         // Set a mapping parameter for a non-mapped field.
-        err = fieldml.FieldML_BeginField( testFieldName2, continuousDomainId );
+        err = fieldml.FieldML_BeginDerivedField( testFieldName2, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
         err = fieldml.FieldML_SetMappingParameter( discreteDomainId, 0 );
         assertEquals( FieldML.ERR_WRONG_OBJECT_TYPE, err );
@@ -314,7 +314,7 @@ public class FieldMLJavaFieldTest
         assertTrue( fieldId2 > 0 );
 
         // Create a non-mapped field.
-        err = fieldml.FieldML_BeginField( testFieldName3, continuousDomainId );
+        err = fieldml.FieldML_BeginDerivedField( testFieldName3, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
 
         // Assign index values to a non-mapped field.
@@ -361,7 +361,7 @@ public class FieldMLJavaFieldTest
         assertTrue( fieldId2 > 0 );
 
         // Create a non-mapped field.
-        err = fieldml.FieldML_BeginField( testFieldName3, continuousDomainId );
+        err = fieldml.FieldML_BeginDerivedField( testFieldName3, continuousDomainId );
         assertEquals( FieldML.NO_ERROR, err );
         int fieldId3 = fieldml.FieldML_EndField();
         assertTrue( fieldId3 > 0 );

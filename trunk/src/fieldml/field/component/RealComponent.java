@@ -1,9 +1,9 @@
 package fieldml.field.component;
 
-import fieldml.field.FieldParameters;
+import fieldml.field.FieldValues;
 
 public abstract class RealComponent
     extends Component
 {
-    public abstract double evaluate( FieldParameters parameters );
+    public abstract double evaluate( FieldValues parameters );
 }

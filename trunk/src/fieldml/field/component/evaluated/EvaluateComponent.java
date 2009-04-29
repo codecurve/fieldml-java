@@ -1,6 +1,6 @@
 package fieldml.field.component.evaluated;
 
-import fieldml.field.FieldParameters;
+import fieldml.field.FieldValues;
 
 public class EvaluateComponent
     implements Evaluator
@@ -18,9 +18,9 @@ public class EvaluateComponent
 
 
     @Override
-    public double evaluate( FieldParameters values )
+    public double evaluate( FieldValues values )
     {
-        //Evaluators are only used with real-valued parameters
+        //Evaluators are only used with real-valued domains
         return values.values.get( parameterIndex ).realValues[componentIndex];
     }
 }

@@ -31,7 +31,7 @@ public abstract class Field
      */
     private final String name;
 
-    private final ArrayList<Parameter> parameters;
+    private final ArrayList<Evaluator> evaluators;
 
 
     public Field( FieldmlObjectManager<Field> manager, String name, Domain valueDomain )
@@ -40,7 +40,7 @@ public abstract class Field
         this.name = name;
         this.valueDomain = valueDomain;
 
-        parameters = new ArrayList<Parameter>();
+        evaluators = new ArrayList<Evaluator>();
 
         id = manager.add( this );
     }
@@ -85,25 +85,25 @@ public abstract class Field
 
     /**
      * Evaluate this field using the given parameters. The parameters are
-     * provided by a FieldParameters object, and a list of indexes into that
-     * object. This allows the caller to re-use the same FieldParameters object
+     * provided by a FieldValues object, and a list of indexes into that
+     * object. This allows the caller to re-use the same FieldValues object
      * to build up a set of values without having to construct a correctly
      * ordered list of parameters for each field evaluation they wish to do.
      * 
      * The field evaluates into the given Value object, which may in turn be an
-     * entry in the given FieldParameters object.
+     * entry in the given FieldValues object.
      * 
-     * This makes the FieldParameters analogous to a heap, and the indexes into
+     * This makes the FieldValues analogous to a heap, and the indexes into
      * it analogous to a list of references.
      */
-    public abstract void evaluate( FieldParameters parameters, int[] parameterIndexes, Value value )
+    public abstract void evaluate( FieldValues values, int[] valueIndexes, Value value )
         throws FieldmlException;
 
 
-    protected void addParameter( Parameter parameter )
+    protected void addEvaluator( Evaluator parameter )
         throws FieldmlException
     {
-        for( Parameter p : parameters )
+        for( Evaluator p : evaluators )
         {
             if( p.getName().equals( parameter.getName() ) )
             {
@@ -111,34 +111,34 @@ public abstract class Field
             }
         }
 
-        parameters.add( parameter );
+        evaluators.add( parameter );
     }
 
 
-    public int getInputParameterCount()
+    public int getParameterCount()
     {
         int count = 0;
 
-        for( Parameter p : parameters )
+        for( Evaluator e : evaluators )
         {
-            if( p instanceof InputParameter )
+            if( e instanceof ParameterEvaluator )
             {
                 count++;
             }
         }
-        
+
         return count;
     }
 
 
-    public void getInputParameterDomains( int[] domainIds )
+    public void getParameterDomains( int[] domainIds )
         throws FieldmlException
     {
         int index = 0;
 
-        for( Parameter p : parameters )
+        for( Evaluator e : evaluators )
         {
-            if( !( p instanceof InputParameter ) )
+            if( !( e instanceof ParameterEvaluator ) )
             {
                 continue;
             }
@@ -148,32 +148,32 @@ public abstract class Field
                 throw new BadFieldmlParameterException();
             }
 
-            domainIds[index++] = p.getDomain().getId();
+            domainIds[index++] = e.getDomain().getId();
         }
     }
 
 
-    public Domain getParameterDomain( int parameterIndex )
+    public Domain getValueDomain( int valueIndex )
         throws FieldmlException
     {
-        Parameter parameter = getParameter( parameterIndex );
-        
-        return parameter.getDomain();
+        Evaluator evaluator = getEvaluator( valueIndex );
+
+        return evaluator.getDomain();
     }
 
 
-    public String getParameterName( int parameterIndex )
+    public String getValueName( int valueIndex )
         throws FieldmlException
     {
-        Parameter parameter = getParameter( parameterIndex );
-        
-        return parameter.getName();
+        Evaluator evaluator = getEvaluator( valueIndex );
+
+        return evaluator.getName();
     }
 
 
-    public int getParameterCount()
+    public int getValueCount()
     {
-        return parameters.size();
+        return evaluators.size();
     }
 
 
@@ -183,11 +183,11 @@ public abstract class Field
 
         signature.add( valueDomain );
 
-        for( Parameter parameter : parameters )
+        for( Evaluator e : evaluators )
         {
-            if( parameter instanceof InputParameter )
+            if( e instanceof ParameterEvaluator )
             {
-                signature.add( parameter.getDomain() );
+                signature.add( e.getDomain() );
             }
         }
 
@@ -195,23 +195,23 @@ public abstract class Field
     }
 
 
-    public int getParameterType( int parameterIndex )
+    public int getValueType( int valueIndex )
         throws FieldmlException
     {
-        Parameter parameter = getParameter( parameterIndex );
-        
-        return parameter.getType();
+        Evaluator evaluator = getEvaluator( valueIndex );
+
+        return evaluator.getType();
     }
 
 
-    public Parameter getParameter( int parameterIndex )
+    public Evaluator getEvaluator( int valueIndex )
         throws FieldmlException
     {
-        if( ( parameterIndex < 0 ) || ( parameterIndex >= parameters.size() ) )
+        if( ( valueIndex < 0 ) || ( valueIndex >= evaluators.size() ) )
         {
             throw new BadFieldmlParameterException();
         }
 
-        return parameters.get( parameterIndex );
+        return evaluators.get( valueIndex );
     }
 }

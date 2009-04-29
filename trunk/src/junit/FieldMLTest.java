@@ -76,7 +76,7 @@ public abstract class FieldMLTest
     {
         int err;
         
-        err = fieldml.FieldML_BeginField( name, domainId );
+        err = fieldml.FieldML_BeginDerivedField( name, domainId );
         if( err != FieldML.NO_ERROR )
         {
             return err;
