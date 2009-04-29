@@ -109,7 +109,10 @@
       <parameter id="component_name"/>
     </value>
      
-    <value id="interpolated_value" field="library::bilinear_interpolation" />
+    <value id="interpolated_value" field="library::bilinear_interpolation">
+      <parameter id="parameter_values" />
+      <parameter id="xi" />
+    </value>
     
     <assign_component id="value" parameter="interpolated_value" component="value"/>
   </derived_field>
