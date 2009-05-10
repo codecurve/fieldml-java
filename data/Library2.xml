@@ -1,0 +1,118 @@
+<fieldml>
+  <!--
+    Elements of a "field" type domain component must all have the same input
+    parameter and value types.
+   -->
+  <discrete_domain id="library::phi_fields" type="field">
+    <component id="phi" >
+      library::bilinear_lagrange_phi  library::bicubic_hermite_phi
+    </component>
+  </discrete_domain>
+  
+  <!--
+    A generic 4-component phi vector for use with 4-parameter interpolation
+    (e.g. bilinear lagrange) 
+   -->
+  <continuous_domain id="library::phi_4">
+    <component id="phi1"/>
+    <component id="phi2"/>
+    <component id="phi3"/>
+    <component id="phi4"/>
+  </continuous_domain>
+  
+  <!--
+    Per-node parameters for linear interpolation.   
+   -->
+  <continuous_domain id="library::linear_node_parameters">
+    <component id="u" />
+  </continuous_domain>
+  
+  <!--
+    Per-node parameters for cubic hermite interpolation.
+   -->
+  <continuous_domain id="library::cubic_hermite_node_parameters">
+    <component id="u"/>
+    <component id="duds1"/>
+    <component id="duds2"/>
+    <component id="d2uds1ds2"/>
+  </continuous_domain>
+
+  <!--
+    This field must be supplied by the client. As the value domain is continuous, a 'complete' list
+    of values cannot be supplied implicitly. On the other hand, explicitly specifying a resolution
+    in the FieldML itself would restrict the client too much. Therefore, the client application is
+    free to specify this field at whatever resolution it needs to, and indeed can change that 
+    resolution as it sees fit.
+    
+    They are declared here to ensure that there is at least one field of the given type available
+    for use as a parameter of the appropriate type for fields that require one.
+   -->
+  <client_field id="client::xi_2d" value_domain="library::unit_square" />
+  
+  <!--
+    Computations can take any number of parameters, and must return the exact
+    number of components that the calling field needs. This is to ensure that
+    the cardinality of each field component is the same, and thus that the field's
+    cardinality is internally consistent.
+   -->
+  <computation id="library::bilinear_lagrange_phi" value_type="real" value_count="4">
+    <!--
+      In order for them to be re-usable, computations can only specify the base type
+      and component count of their parameter's domains. 'Weak' typing can be implemented
+      simply by interpreting the domain_components specification as meaning "at least" rather
+      than "equal to".
+     -->
+    <parameter id="xi" domain_type="real" domain_components="2" />
+    
+    <evaluate value_index="1">
+      <multiply>
+        <subtract>
+          <constant_value value="1" />
+          <parameter_value name="xi" component_index="1" />
+        </subtract>
+        <subtract>
+          <constant_value value="1" />
+          <parameter_value name="xi" component_index="2" />
+        </subtract>
+      </multiply>
+    </evaluate>
+
+    <evaluate value_index="2">
+      <multiply>
+        <parameter_value name="xi" component_index="1" />
+        <subtract>
+          <constant_value value="1" />
+          <parameter_value name="xi" component_index="2" />
+        </subtract>
+      </multiply>
+    </evaluate>
+  
+    <evaluate value_index="3">
+      <multiply>
+        <subtract>
+          <constant_value value="1" />
+          <parameter_value name="xi" component_index="1" />
+        </subtract>
+        <parameter_value name="xi" component_index="2" />
+      </multiply>
+    </evaluate>
+
+    <evaluate value_index="4">
+      <multiply>
+        <parameter_value name="xi" component_index="1" />
+        <parameter_value name="xi" component_index="2" />
+      </multiply>
+    </evaluate>
+  </computation>
+
+  <!--
+    A field used for applying bilinear lagrange interpolation to quad elements.
+   -->
+  <computed_field id="library::bilinear_lagrange_phi" value_domain="library::phi_4">
+    <parameter name="xi" domain="library::unit_square"/>
+
+    <compute_components computation="library::bilinear_lagrange_phi">
+      <parameter name="xi" />
+    </compute_components>
+  </computed_field>
+</fieldml>
