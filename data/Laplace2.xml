@@ -6,20 +6,13 @@
    
   <cm_meta:opencmiss_annotation xmlns:cm_meta="http://www.fieldml.org/metadata/opencmiss_annotation/1.0">
     <cm_meta:region name="region1">
-      <cm_meta:elements domain="mesh.element" node_map="element.nodes"/>
-      <cm_meta:nodes domain="mesh.node" parameter_map="node.parameters"/>
-      <cm_meta:mesh name="mesh.coordinates" type="quad" interpolation_map="element.phi_field" component_1="x" component_2="y" />
-      <cm_meta:field name="mesh.g" type="scalar" mesh="mesh.coordinates" interpolation="element.phi_field" component_1="g" />
-      <cm_meta:field name="mesh.n" type="scalar" mesh="mesh.coordinates" interpolation="element.phi_field" compoennt_1="n" />
+      <cm_meta:elements domain="mesh.element" node_map="element.nodes" />
+      <cm_meta:nodes domain="mesh.node" parameter_map="node.parameters" />
+      <cm_meta:mesh name="mesh.coordinates" type="quad" component_1="x" component_2="y" />
+      <cm_meta:field name="mesh.g" type="scalar" mesh="mesh.coordinates" component_1="g" />
+      <cm_meta:field name="mesh.n" type="scalar" mesh="mesh.coordinates" compoennt_1="n" />
     </cm_meta:region>
   </cm_meta:opencmiss_annotation>
-
-  <discrete_domain id="node.field_phis" type="field">
-    <import_component id="x" domain="library::phi_fields" component="phi" />
-    <import_component id="y" domain="library::phi_fields" component="phi" />
-    <import_component id="g" domain="library::phi_fields" component="phi" />
-    <import_component id="n" domain="library::phi_fields" component="phi" />
-  </discrete_domain>
 
   <continuous_domain id="node.parameters">
     <component id="x" />
@@ -28,63 +21,6 @@
     <component id="n" />
   </continuous_domain>
   
-  <!--
-    Mapped fields can only import components from other mapped fields with the same
-    index domain.
-    
-    These maps are for extracting interpolation-specific values from the list of parameters
-    attached to each node.
-   -->
-  <mapped_field id="node.parameters.bilinear_x" value_domain="library::bilinear_node_parameters">
-    <mapping domain="mesh.node" component="id" />
-    
-    <import_component id="u" field="node.parameters" component="x" />
-  </mapped_field>
-
-  <mapped_field id="node.parameters.bilinear_y" value_domain="library::bilinear_node_parameters">
-    <mapping domain="mesh.node" component="id" />
-    
-    <import_component id="u" field="node.parameters" component="y" />
-  </mapped_field>
-
-  <mapped_field id="node.parameters.bilinear_g" value_domain="library::bilinear_node_parameters">
-    <mapping domain="mesh.node" component="id" />
-    
-    <import_component id="u" field="node.parameters" component="g" />
-  </mapped_field>
-
-  <mapped_field id="node.parameters.bilinear_n" value_domain="library::bilinear_node_parameters">
-    <mapping domain="mesh.node" component="id" />
-    
-    <import_component id="u" field="node.parameters" component="n" />
-  </mapped_field>
-  
-  <discrete_domain id="node.field_dofs" type="field">
-    <component id="x">
-      node.parameters.bilinear_x  <!--  node.parameters.bicubic_hermite_x -->
-    </component>
-    <component id="y">
-      node.parameters.bilinear_y
-    </component>
-    <component id="g">
-      node.parameters.bilinear_g
-    </component>
-    <component id="n">
-      node.parameters.bilinear_n
-    </component>
-  </discrete_domain>
-  
-<!-- 
-  <mapped_field id="node.parameters.bicubic_hermite_x" value_domain="library::bicubic_hermite_node_parameters">
-    <mapping domain="mesh.node" component="id" />
-    
-    <import_component id="u" field="node.parameters" component="x" />
-    <import_component id="duds1" field="node.parameters" component="dxds1" />
-    <import_component id="duds2" field="node.parameters" component="dxds2" />
-    <import_component id="d2uds1ds2" field="node.parameters" component="d2xds1ds2" />
-  </mapped_field>
- -->  
-
   <discrete_domain id="mesh.element" type="index">
     <component id="id">
       3  4  7  8  11  12  15  16
@@ -104,47 +40,50 @@
     <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
   
-  <computed_field id="mesh.coordinates" value_domain="library::cartesian_2d">
+  <piecewise_field id="mesh.coordinates" value_domain="library::cartesian_2d">
     <parameter name="element" domain="mesh.element" />
 
-    <!--
-      An interpolate_component declaration uses the given node lists, dof map and
-      phi map to interpolated the field. The number of components for any given
-      entry in the dof map must match the number of components in the corresponding
-      phi map entry. This can be checked by an offline validator if needed.
-     -->
-    <interpolate_component id="x">
-      <nodes element_parameter="element" node_map="element.nodes" />
-      <dofs dof_component="x" dof_map="node.dof_field" />
-      <phis phi_component="x" phi_map="element.phi_field" />
-    </interpolate_component>
-    <interpolate_component id="y">
-      <nodes element_parameter="element" node_map="element.nodes" />
-      <dofs dof_component="y" dof_map="node.dof_field" />
-      <phis phi_component="y" phi_map="element.phi_field" />
-    </interpolate_component>
-  </computed_field>
+    <piecewise_define component="x">
+      <parameter_values>
+        3  4  7  8  11  12  15  16
+        <evaluate evaluation="library::dot_product">
+          <field_parameter field="library::bilinear_lagrange_phi" />
+          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
+            x
+          </nodal_parameter>
+        </evaluate>
+      </parameter_values>
+    </piecewise_define>
 
-  <computed_field id="mesh.g" value_domain="library::infinite_line">
+    <piecewise_define component="y">
+      <parameter_values>
+        3  4  7  8  11  12  15  16
+        <evaluate evaluation="library::dot_product">
+          <field_parameter field="library::bilinear_lagrange_phi" />
+          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
+            y
+          </nodal_parameter>
+        </evaluate>
+      </parameter_values>
+    </piecewise_define>
+  </piecewise_field>
+
+  <piecewise_field id="mesh.coordinates" value_domain="library::cartesian_2d">
     <parameter name="element" domain="mesh.element" />
 
-    <interpolate_component id="g">
-      <nodes element_parameter="element" node_map="element.nodes" />
-      <dofs dof_component="g" dof_map="node.dof_field" />
-      <phis phi_component="g" phi_map="element.phi_field" />
-    </interpolate_component>
-  </computed_field>
-  
-  <computed_field id="mesh.n" value_domain="library::infinite_line">
-    <parameter name="element" domain="mesh.element" />
+    <piecewise_define component="g">
+      <parameter_values>
+        3  4  7  8  11  12  15  16
+        <evaluate evaluation="library::dot_product">
+          <field_parameter field="library::bilinear_lagrange_phi" />
+          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
+            g
+          </nodal_parameter>
+        </evaluate>
+      </parameter_values>
+    </piecewise_define>
+  </piecewise_field>
 
-    <interpolate_component id="n">
-      <nodes element_parameter="element" node_map="element.nodes" />
-      <dofs dof_component="n" dof_map="node.dof_field" />
-      <phis phi_component="n" phi_map="element.phi_field" />
-    </interpolate_component>
-  </computed_field>
-  
   <mapped_field id="node.parameters" value_domain="node.parameters">
     <mapping domain="mesh.node" component="id" />
 
@@ -198,7 +137,7 @@
     <!--
       Perhaps just fold these into the mapped_field tag? 
      -->
-    <mapping_parameter domain="mesh.element" component="id"/>
+    <mapping_parameter domain="mesh.element" component="id" />
     
     <map value="3">
         3  4  8  9
@@ -224,21 +163,5 @@
     <map value="16">
         19  20  24  25
     </map>
-  </mapped_field>
-  
-  <mapped_field id="node.dof_field" value_domain="node.field_dofs">
-    <mapping_parameter domain="mesh.node" component="id"/>
-
-    <default_map>
-      node.parameters.bilinear_x  node.parameters.bilinear_y  node.parameters.bilinear_g  node.parameters.bilinear_n
-    </default_map>
-  </mapped_field>
-
-  <mapped_field id="element.phi_field" value_domain="node.field_phis">
-    <mapping_parameter domain="mesh.element" component="id"/>
-
-    <default_map>
-      library::bilinear_lagrange_phi  library::bilinear_lagrange_phi  library::bilinear_lagrange_phi  library::bilinear_lagrange_phi
-    </default_map>
   </mapped_field>
 </fieldml>

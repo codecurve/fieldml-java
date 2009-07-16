@@ -1,42 +1,26 @@
 <fieldml>
-  <!--
-    Elements of a "field" type domain component must all have the same input
-    parameter and value types.
-   -->
-  <discrete_domain id="library::phi_fields" type="field">
-    <component id="phi" >
-      library::bilinear_lagrange_phi  library::bicubic_hermite_phi
-    </component>
-  </discrete_domain>
-  
+  <continuous_domain id="library::real">
+    <component id="n" />
+  </continuous_domain>
+
   <!--
     A generic 4-component phi vector for use with 4-parameter interpolation
     (e.g. bilinear lagrange) 
+    
+    No explicit extrema means that it covers the entire real domain.
    -->
-  <continuous_domain id="library::phi_4">
-    <component id="phi1"/>
-    <component id="phi2"/>
-    <component id="phi3"/>
-    <component id="phi4"/>
+  <continuous_domain id="library::phi_4" ">
+    <component id="phi1" />
+    <component id="phi2" />
+    <component id="phi3" />
+    <component id="phi4" />
   </continuous_domain>
   
-  <!--
-    Per-node parameters for linear interpolation.   
-   -->
-  <continuous_domain id="library::linear_node_parameters">
-    <component id="u" />
+  <continuous_domain id="library::unit_square" min="0" max="1">
+    <component id="x1" />
+    <component id="x2" />
   </continuous_domain>
   
-  <!--
-    Per-node parameters for cubic hermite interpolation.
-   -->
-  <continuous_domain id="library::cubic_hermite_node_parameters">
-    <component id="u"/>
-    <component id="duds1"/>
-    <component id="duds2"/>
-    <component id="d2uds1ds2"/>
-  </continuous_domain>
-
   <!--
     This field must be supplied by the client. As the value domain is continuous, a 'complete' list
     of values cannot be supplied implicitly. On the other hand, explicitly specifying a resolution
@@ -50,19 +34,23 @@
   <client_field id="client::xi_2d" value_domain="library::unit_square" />
   
   <!--
-    Computations can take any number of parameters, and must return the exact
+    Evaluations can take any number of parameters, and must return the exact
     number of components that the calling field needs. This is to ensure that
     the cardinality of each field component is the same, and thus that the field's
     cardinality is internally consistent.
+    
+    This could also be achieved simply by insisting that evaluations can only take
+    a single parameter, and leaving it up to the user to bundle the right components
+    together. This precludes parameters from different domains, however.
    -->
-  <computation id="library::bilinear_lagrange_phi" value_type="real" value_count="4">
+  <evaluation id="library::bilinear_lagrange_phi" value_domain="library::real" value_count="4">
     <!--
-      In order for them to be re-usable, computations can only specify the base type
-      and component count of their parameter's domains. 'Weak' typing can be implemented
-      simply by interpreting the domain_components specification as meaning "at least" rather
+      In order for them to be re-usable, evaluations can only specify the domain
+      and component count of their parameters. 'Weak' typing can be implemented
+      simply by interpreting the component_count specification as meaning "at least" rather
       than "equal to".
      -->
-    <parameter id="xi" domain_type="real" domain_components="2" />
+    <parameter id="xi" parameter_domain="library::real" component_count="2" />
     
     <evaluate value_index="1">
       <multiply>
@@ -103,16 +91,15 @@
         <parameter_value name="xi" component_index="2" />
       </multiply>
     </evaluate>
-  </computation>
-
+  </evaluation>
+  
   <!--
     A field used for applying bilinear lagrange interpolation to quad elements.
    -->
-  <computed_field id="library::bilinear_lagrange_phi" value_domain="library::phi_4">
-    <parameter name="xi" domain="library::unit_square"/>
+  <evaluated_field id="library::bilinear_lagrange_phi" value_domain="library::phi_4">
+    <evaluate_components evaluation="library::bilinear_lagrange_phi">
+      <field_parameter name="client::xi_2d" />
+    </evaluate_components>
+  </evaluated_field>
 
-    <compute_components computation="library::bilinear_lagrange_phi">
-      <parameter name="xi" />
-    </compute_components>
-  </computed_field>
 </fieldml>
