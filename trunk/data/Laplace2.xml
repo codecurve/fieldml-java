@@ -40,14 +40,14 @@
     <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
   
-  <nodal_field id="element.bilinear.g" element_domain="mesh.element" value_domain="library::bilinear_u">
+  <nodal_field id="element.bilinear.x" element_domain="mesh.element" value_domain="library::bilinear_u">
     <evaluate_nodal element_values="3  4  7  8  11  12  15  16">
       <dof_indexes map="element.quad_nodes" /> 
       <dof_values map="node.parameters" components="x" />
     </evaluate_nodal>
   </nodal_field>
 
-  <nodal_field id="element.bilinear.g" element_domain="mesh.element" value_domain="library::bilinear_u">
+  <nodal_field id="element.bilinear.y" element_domain="mesh.element" value_domain="library::bilinear_u">
     <evaluate_nodal element_values="3  4  7  8  11  12  15  16">
       <dof_indexes map="element.quad_nodes" /> 
       <dof_values map="node.parameters" components="y" />
