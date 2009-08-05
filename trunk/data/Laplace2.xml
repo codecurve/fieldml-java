@@ -33,94 +33,93 @@
     </component>
   </discrete_domain>
   
-  <discrete_domain id="mesh.element_nodes" type="index">
+  <discrete_domain id="mesh.element_quad_nodes" type="index">
     <import_component id="node1" domain="mesh.node" component="id" />
     <import_component id="node2" domain="mesh.node" component="id" />
     <import_component id="node3" domain="mesh.node" component="id" />
     <import_component id="node4" domain="mesh.node" component="id" />
   </discrete_domain>
   
-  <piecewise_field id="mesh.coordinates" value_domain="library::cartesian_2d">
-    <parameter name="element" domain="mesh.element" />
+  <nodal_field id="element.bilinear.g" element_domain="mesh.element" value_domain="library::bilinear_u">
+    <evaluate_nodal element_values="3  4  7  8  11  12  15  16">
+      <dof_indexes map="element.quad_nodes" /> 
+      <dof_values map="node.parameters" components="x" />
+    </evaluate_nodal>
+  </nodal_field>
 
-    <piecewise_define component="x">
-      <parameter_values>
-        3  4  7  8  11  12  15  16
-        <evaluate evaluation="library::dot_product">
-          <field_parameter field="library::bilinear_lagrange_phi" />
-          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
-            x
-          </nodal_parameter>
-        </evaluate>
-      </parameter_values>
-    </piecewise_define>
-
-    <piecewise_define component="y">
-      <parameter_values>
-        3  4  7  8  11  12  15  16
-        <evaluate evaluation="library::dot_product">
-          <field_parameter field="library::bilinear_lagrange_phi" />
-          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
-            y
-          </nodal_parameter>
-        </evaluate>
-      </parameter_values>
-    </piecewise_define>
+  <nodal_field id="element.bilinear.g" element_domain="mesh.element" value_domain="library::bilinear_u">
+    <evaluate_nodal element_values="3  4  7  8  11  12  15  16">
+      <dof_indexes map="element.quad_nodes" /> 
+      <dof_values map="node.parameters" components="y" />
+    </evaluate_nodal>
+  </nodal_field>
+  
+  <nodal_field id="element.bilinear.g" element_domain="mesh.element" value_domain="library::bilinear_u">
+    <evaluate_nodal element_values="3  4  7  8  11  12  15  16">
+      <dof_indexes map="element.quad_nodes" /> 
+      <dof_values map="node.parameters" components="g" />
+    </evaluate_nodal>
+  </nodal_field>
+  
+  <piecewise_field id="mesh.coordinates" key_domain="mesh.element" value_domain="library::cartesian_2d">
+    <evaluate_piecewise component="x" key_values="3  4  7  8  11  12  15  16">
+      <evaluate evaluation="library::dot_product">
+        <field_parameter field="library::bilinear_lagrange_phi" />
+        <field_parameter field="element.bilinear.x" />
+      </evaluate>
+    </evaluate_piecewise>
+    <evaluate_piecewise component="y" key_values="3  4  7  8  11  12  15  16">
+      <evaluate evaluation="library::dot_product">
+        <field_parameter field="library::bilinear_lagrange_phi" />
+        <field_parameter field="element.bilinear.y" />
+      </evaluate>
+    </evaluate_piecewise>
   </piecewise_field>
 
-  <piecewise_field id="mesh.coordinates" value_domain="library::cartesian_2d">
-    <parameter name="element" domain="mesh.element" />
-
-    <piecewise_define component="g">
-      <parameter_values>
-        3  4  7  8  11  12  15  16
-        <evaluate evaluation="library::dot_product">
-          <field_parameter field="library::bilinear_lagrange_phi" />
-          <nodal_parameter nodes="element.nodes" dofs="node.parameters">
-            g
-          </nodal_parameter>
-        </evaluate>
-      </parameter_values>
-    </piecewise_define>
+  <piecewise_field id="mesh.coordinates" key_domain="mesh.element" value_domain="library::real">
+    <evaluate_piecewise component="g" key_values="3  4  7  8  11  12  15  16">
+      <evaluate evaluation="library::dot_product">
+        <field_parameter field="library::bilinear_lagrange_phi" />
+        <field_parameter field="element.bilinear.g" />
+      </evaluate>
+    </evaluate_piecewise>
   </piecewise_field>
 
-  <mapped_field id="node.parameters" value_domain="node.parameters">
-    <mapping domain="mesh.node" component="id" />
-
-    <map value="3">
+  <mapped_field id="node.parameters" key_domain="mesh.node" value_domain="node.parameters">
+    <map parameter_values="3">
       1.0000000000000000E+00   0.0000000000000000E+00   3.1972356254077172E+00  -5.3524942944527254E-07
     </map>
-    <map value="4">
+    <map parameter_values="4">
       1.5000000000000000E+00   0.0000000000000000E+00   3.6365212588612064E+00  -5.3524942966731714E-07
     </map>
-    <map value="5">
+    <map parameter_values="5">
       2.0000000000000000E+00   0.0000000000000000E+00   3.8050656639529055E+00   9.1764340634819641E-02
     </map>
-    <map value="8">
+    <map parameter_values="8">
       1.0000000000000000E+00   2.5000000000000000E-01   3.2333119188635906E+00  -4.6824431862851323E-01
     </map>
-    <map value="9">
+    <map parameter_values="9">
       1.5000000000000000E+00   2.5000000000000000E-01   3.6624772699266712E+00  -4.6824431862851257E-01
     </map>
-    <map value="10">
+    <map parameter_values="10">
       2.0000000000000000E+00   2.5000000000000000E-01   3.8587585611294335E+00  -5.7325184862691669E-01
     </map>
-    <map value="14">
+    <map parameter_values="14">
       1.5000000000000000E+00   5.0000000000000000E-01   3.7541981649838512E+00  -4.6824431862851390E-01
     </map>
-    <map value="15">
+    <map parameter_values="15">
       2.0000000000000000E+00   5.0000000000000000E-01   4.0337189461891123E+00  -5.7325184862691603E-01
     </map>
-    <map value="19">
+    <map parameter_values="19">
       1.5000000000000000E+00   7.5000000000000000E-01   3.8640888796308559E+00  -4.6824431862851279E-01
     </map>
-    <map value="20">
+    <map parameter_values="20">
       2.0000000000000000E+00   7.5000000000000000E-01   4.4352922105181323E+00  -5.7325184862691669E-01
     </map>
-    <map value="24">
+    <map parameter_values="24">
       1.5000000000000000E+00   1.0000000000000000E+00   3.7494245949541605E+00   1.2590685730495488E-01
     </map>
-    <map value="25">
+    <map parameter_values="25">
       2.0000000000000000E+00   1.0000000000000000E+00   5.4868641978000836E+00  -1.2488136854377663E-01
     </map>
   </mapped_field>
@@ -133,34 +132,29 @@
     associated API greatly. For a start, it allows the api to infer "domain 1, component 1"
     for assigning values.   
    -->
-  <mapped_field id="element.nodes" value_domain="mesh.element_nodes">
-    <!--
-      Perhaps just fold these into the mapped_field tag? 
-     -->
-    <mapping_parameter domain="mesh.element" component="id" />
-    
-    <map value="3">
+  <mapped_field id="element.quad_nodes" key_domain="mesh.element" value_domain="mesh.element_quad_nodes">
+    <map parameter_values="3">
         3  4  8  9
     </map>
-    <map value="4">
+    <map parameter_values="4">
         4  5  9  10
     </map>
-    <map value="7">
+    <map parameter_values="7">
         8  9  13  14
     </map>
-    <map value="8">
+    <map parameter_values="8">
         9  10  14  15
     </map>
-    <map value="11">
+    <map parameter_values="11">
         13  14  18  19
     </map>
-    <map value="12">
+    <map parameter_values="12">
         14  15  19  20
     </map>
-    <map value="15">
+    <map parameter_values="15">
         18  19  23  24
     </map>
-    <map value="16">
+    <map parameter_values="16">
         19  20  24  25
     </map>
   </mapped_field>
