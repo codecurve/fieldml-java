@@ -1,0 +1,106 @@
+<fieldml>
+  <!-- 
+  
+  1---2---6
+  |   |\ 3|
+  | 1 |2\ |
+  |   |  \|
+  3---4---5
+  
+  
+   -->
+
+  <!--
+      A vector domain contains an arbitrary number of components, only accessible via indexes or iteration.
+      In order to ensure that the vector domain is homogeneous, each component must come from the same domain.
+  -->
+  <continuous_vector_domain id="node.parameters" component_domain="library::real" />
+  
+  <!--
+      A discrete domain is a fixed collection of arbitrary values. The "index" type means that although the values
+      are read as integers, it is not meaningful to perform mathematical operations on them. 
+   -->
+  <discrete_domain id="mesh.element" type="index">
+    <component id="id">
+      1  2  3
+    </component>
+  </discrete_domain>
+  
+  <discrete_domain id="mesh.node" type="index">
+    <component id="id">
+      1  2  3  4  5  6
+    </component>
+  </discrete_domain>
+  
+  <discrete_vector_domain id="element.nodes" component_domain="mesh.node" />
+  
+  <piecewise_field id="mesh.coordinates" element_domain="mesh.element" value_domain="library::cartesian_2d">
+    <evaluate_piecewise component="x">
+      <elements>  1
+        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_square" interpolation="library::bilinear_lagrange">
+          0
+        </interpolated_value>
+      </elements>
+      <elements>  2
+        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_triangle" interpolation="library::bilinear_simplex">
+          0
+        </interpolated_value>
+      </elements>
+      <elements>  3
+        <constant_value>
+          0.0
+        </constant_value>
+      </elements>
+    </evaluate_piecewise>
+    <evaluate_piecewise component="y">
+      <elements>  1
+        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_square" interpolation="library::bilinear_lagrange">
+          1
+        </interpolated_value>
+      </elements>
+      <elements>  2
+        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_triangle" interpolation="library::bilinear_simplex">
+          1
+        </interpolated_value>
+      </elements>
+      <elements>  3
+        <constant_value>
+          0.0
+        </constant_value>
+      </elements>
+    </evaluate_piecewise>
+  </piecewise_field>
+
+  <mapped_field id="node.parameters" key_domain="mesh.node" value_domain="node.parameters">
+    <map key_values="1">
+      0  1
+    </map>
+    <map key_values="2">
+      1  1
+    </map>
+    <map key_values="3">
+      0  0
+    </map>
+    <map key_values="4">
+      1  0
+    </map>
+    <map key_values="5">
+      2  0
+    </map>
+    <map key_values="6">
+      2  1
+    </map>
+  </mapped_field>
+
+  <mapped_field id="mesh.element_nodes" key_domain="mesh.element" value_domain="element.nodes">
+    <map key_values="1">
+        1  2  3  4
+    </map>
+    <map key_values="2">
+        4  2  5
+    </map>
+    <map key_values="3">
+        6  5  2
+    </map>
+  </mapped_field>
+</fieldml>
