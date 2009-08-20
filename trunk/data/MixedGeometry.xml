@@ -1,11 +1,11 @@
 <fieldml>
   <!-- 
   
-  1---2---6
-  |   |\ 3|
-  | 1 |2\ |
-  |   |  \|
-  3---4---5
+  7---1---2---6
+  |   |   |\ 3|
+  | 4 | 1 |2\ |
+  |   |   |  \|
+  8---3---4---5
   
   
    -->
@@ -34,15 +34,26 @@
   
   <discrete_vector_domain id="element.nodes" component_domain="mesh.node" />
   
-  <piecewise_field id="mesh.coordinates" element_domain="mesh.element" value_domain="library::cartesian_2d">
+  <mapped_field id="element.shape" domain="to be decided">
+    <map key_values="1,4">
+        library::unit_square
+    </map>
+    <map key_values="2,3">
+        library::unit_triangle
+    </map>
+  </mapped_field>
+  
+  <mesh id="mesh1" elements="mesh.element" element_shapes="element.shape" nodes="mesh.element_nodes" />
+  
+  <piecewise_field id="mesh.coordinates" mesh="mesh1" value_domain="library::cartesian_2d">
     <evaluate_piecewise component="x">
-      <elements>  1
-        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_square" interpolation="library::bilinear_lagrange">
+      <elements>  1  4
+        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_lagrange">
           0
         </interpolated_value>
       </elements>
       <elements>  2
-        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_triangle" interpolation="library::bilinear_simplex">
+        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_simplex">
           0
         </interpolated_value>
       </elements>
@@ -53,13 +64,13 @@
       </elements>
     </evaluate_piecewise>
     <evaluate_piecewise component="y">
-      <elements>  1
-        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_square" interpolation="library::bilinear_lagrange">
+      <elements>  1  4
+        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_lagrange">
           1
         </interpolated_value>
       </elements>
       <elements>  2
-        <interpolated_value nodes="mesh.element_nodes" parameters="node.parameters" graph="library::unit_triangle" interpolation="library::bilinear_simplex">
+        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_simplex">
           1
         </interpolated_value>
       </elements>
@@ -73,22 +84,22 @@
 
   <mapped_field id="node.parameters" key_domain="mesh.node" value_domain="node.parameters">
     <map key_values="1">
-      0  1
+      0.0  1.0
     </map>
     <map key_values="2">
-      1  1
+      1.0  1.0
     </map>
     <map key_values="3">
-      0  0
+      0.0  0.0
     </map>
     <map key_values="4">
-      1  0
+      1.0  0.0
     </map>
     <map key_values="5">
-      2  0
+      2.0  0.0
     </map>
     <map key_values="6">
-      2  1
+      2.0  1.0
     </map>
   </mapped_field>
 
@@ -99,8 +110,8 @@
     <map key_values="2">
         4  2  5
     </map>
-    <map key_values="3">
-        6  5  2
+    <map key_values="4">
+        7  1  8  3
     </map>
   </mapped_field>
 </fieldml>
