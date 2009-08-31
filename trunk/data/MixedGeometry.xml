@@ -1,117 +1,196 @@
 <fieldml>
   <!-- 
   
-  7---1---2---6
-  |   |   |\ 3|
-  | 4 | 1 |2\ |
-  |   |   |  \|
-  8---3---4---5
+  9---7---1---2---6
+  |   |   |   |\ 3|
+  | 5 | 4 | 1 |2\ |
+  |   |   |   |  \|
+  10--8---3---4---5
   
   
    -->
 
   <!--
-      A vector domain contains an arbitrary number of components, only accessible via indexes or iteration.
-      In order to ensure that the vector domain is homogeneous, each component must come from the same domain.
-  -->
-  <continuous_vector_domain id="node.parameters" component_domain="library::real" />
+     Mapped fields can be defined over an implicit index-valued ensemble, starting from 1, with the
+     given cardinality. This allows them to be used hierarchically, with the parent supplying it
+     with an ensemble constructed from the parent's own context. 
+   -->
   
   <!--
-      A discrete domain is a fixed collection of arbitrary values. The "index" type means that although the values
-      are read as integers, it is not meaningful to perform mathematical operations on them. 
+     For now, all values in a shape map must have the same dimensionality. This is enforced by
+     specifying the relevant value domain. 
    -->
-  <discrete_domain id="mesh.element" type="index">
-    <component id="id">
-      1  2  3
-    </component>
-  </discrete_domain>
-  
-  <discrete_domain id="mesh.node" type="index">
-    <component id="id">
-      1  2  3  4  5  6
-    </component>
-  </discrete_domain>
-  
-  <discrete_vector_domain id="element.nodes" component_domain="mesh.node" />
-  
-  <mapped_field id="element.shape" domain="to be decided">
-    <map key_values="1,4">
-        library::unit_square
-    </map>
-    <map key_values="2,3">
-        library::unit_triangle
-    </map>
+  <mapped_field elements="5" id="test_mesh.shapes" value_domain="library::2d_shapes">
+    <elements>
+      1  4  5
+      <constant_value value="library::unit_square" />
+    </elements>
+    <elements>
+      2  3
+      <constant_value value="library::unit_triangle" />
+    </elements>
   </mapped_field>
   
-  <mesh id="mesh1" elements="mesh.element" element_shapes="element.shape" nodes="mesh.element_nodes" />
+  <mapped_field elements="4" id="quad_mesh.shapes" value_domain="library::2d_shapes">
+    <elements>
+      1  2  3  4
+      <constant_value value="library::unit_square" />
+    </elements>
+  </mapped_field>
   
+  <!--
+    Generates an output dof-vector based on an input dof vector via a matrix.
+   -->
+  <dof_generator_linear name="quad_refinement_dofs" input_elements="4" output_elements="9">
+    <row>
+      1   0   0   0
+    </row>
+    <row>
+      0   1   0   0
+    </row>
+    <row>
+      0   0   1   0
+    </row>
+    <row>
+      0   0   0   1
+    </row>
+    <row>
+      0.5 0.5 0   0
+    </row>
+    <row>
+      0.5 0   0   0.5
+    </row>
+    <row>
+      0.5 0.5 0.5 0.5
+    </row>
+    <row>
+      0   0.5 0.5 0
+    </row>
+    <row>
+      0   0   0.5 0.5
+    </row>
+  </dof_generator_linear>
+  
+
+  <!--
+     The shapes and nodes fields must have the same ensemble cardinality
+   -->
+  <mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh.element_nodes" />
+  
+  <mesh id="mesh_refinement.quad" element_shapes="quad_mesh.shapes" nodes="mesh.element_nodes" />
+
   <piecewise_field id="mesh.coordinates" mesh="mesh1" value_domain="library::cartesian_2d">
-    <evaluate_piecewise component="x">
+    <evaluate_piecewise component="x" dofs="global.mesh.x">
       <elements>  1  4
-        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_lagrange">
-          0
-        </interpolated_value>
+        <import_value field="library::bilinear_lagrange">
+          <dofs component="u">
+            <generate_dofs generator="library::direct_dof_generator">
+              <!--
+                The element passed to the given field is the element being evaluated 
+               -->
+              <import_indexes field="mesh1.node_list" />
+            </generate_dofs>
+          </dofs>
+        </import_value>
       </elements>
       <elements>  2
-        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_simplex">
-          0
-        </interpolated_value>
+        <import_value field="library::bilinear_simplex">
+          <dofs component="u">
+            <generate_dofs generator="library::direct_dof_generator">
+              <!--
+                The element passed to the given field is the element being evaluated 
+               -->
+              <import_indexes field="mesh1.node_list" />
+            </generate_dofs>
+          </dofs>
+        </import_value>
       </elements>
       <elements>  3
-        <constant_value>
-          0.0
-        </constant_value>
+        <constant_value value="0.0" />
+      </elements>
+      <elements>  5
+        <import_value field="mesh.quad_field">
+          <dofs component="u">
+            <generate_dofs generator="quad_refinement_dofs">
+              <import_indexes field="mesh1.node_list" />
+            </generate_dofs>
+            <!--
+              How do we turn the xi into an element-xi pair for the refined mesh? 
+             -->
+          </dofs>
+        </import_value>
       </elements>
     </evaluate_piecewise>
-    <evaluate_piecewise component="y">
-      <elements>  1  4
-        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_lagrange">
-          1
-        </interpolated_value>
+  </piecewise_field>
+  
+  <piecewise_field id="mesh.quad_field" mesh="mesh_refinement.quad" value_domain="library::real">
+    <evaluate_piecewise component="u">
+      <elements>  1  2  3  4
+        <interpolate_value element_dof_indexes="mesh_refinement.quad_node_list" interpolation="library::bilinear_lagrange" />
       </elements>
-      <elements>  2
-        <interpolated_value element_dof_list="mesh.element_nodes" dof_list="node.parameters" interpolation="library::bilinear_simplex">
-          1
-        </interpolated_value>
-      </elements>
-      <elements>  3
+    </evaluate_piecewise>
+  </piecewise_field>
+  
+  <piecewise_field elements="5" id="mesh1.node_list" value_domain="library::index_vector">
+    <evaluate_piecewise>
+      <elements> 1
         <constant_value>
-          0.0
+          1  2  4  3
+        </constant_value>
+      </elements>
+      <elements> 2
+        <constant_value>
+          2  4  5
+        </constant_value>
+      </elements>
+      <elements> 3
+        <constant_value>
+          2  5  6
+        </constant_value>
+      </elements>
+      <elements> 4
+        <constant_value>
+          7  1  3  8
+        </constant_value>
+      </elements>
+      <elements> 5
+        <constant_value>
+          9  7  8  10
         </constant_value>
       </elements>
     </evaluate_piecewise>
   </piecewise_field>
 
-  <mapped_field id="node.parameters" key_domain="mesh.node" value_domain="node.parameters">
-    <map key_values="1">
-      0.0  1.0
-    </map>
-    <map key_values="2">
-      1.0  1.0
-    </map>
-    <map key_values="3">
-      0.0  0.0
-    </map>
-    <map key_values="4">
-      1.0  0.0
-    </map>
-    <map key_values="5">
-      2.0  0.0
-    </map>
-    <map key_values="6">
-      2.0  1.0
-    </map>
-  </mapped_field>
+  <piecewise_field elements="4" id="mesh_refinement.quad_node_list" value_domain="library::index_vector">
+    <evaluate_piecewise>
+      <elements> 1
+        <constant_value>
+          1  5  7  6
+        </constant_value>
+      </elements>
+      <elements> 2
+        <constant_value>
+          5  2  8  7
+        </constant_value>
+      </elements>
+      <elements> 3
+        <constant_value>
+          7  8  3  9
+        </constant_value>
+      </elements>
+      <elements> 4
+        <constant_value>
+          6  7  9  4
+        </constant_value>
+      </elements>
+    </evaluate_piecewise>
+  </piecewise_field>
 
-  <mapped_field id="mesh.element_nodes" key_domain="mesh.element" value_domain="element.nodes">
-    <map key_values="1">
-        1  2  3  4
-    </map>
-    <map key_values="2">
-        4  2  5
-    </map>
-    <map key_values="4">
-        7  1  8  3
-    </map>
-  </mapped_field>
+  <global_dof_list id="global.mesh.x">
+    0.0  1.0  0.0  1.0  2.0  2.0 -1.0 -1.0
+  </global_dof_list>
+
+  <global_dof_list id="global.mesh.y">
+    1.0  1.0  0.0  0.0  0.0  1.0  1.0  0.0
+  </global_dof_list>
 </fieldml>
