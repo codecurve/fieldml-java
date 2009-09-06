@@ -1,11 +1,26 @@
 <fieldml>
   <!-- 
   
+  Mixed-geometry mesh:
+  
   9---7---1---2---6
   |   |   |   |\ 3|
   | 5 | 4 | 1 |2\ |
   |   |   |   |  \|
   10--8---3---4---5
+  
+  
+  Quad-refinement mesh:
+  
+  1---5---2
+  |   |   |
+  | 1 | 2 |
+  |   |   |
+  6---7---8
+  |   |   |
+  | 3 | 4 |
+  |   |   |
+  4---9---3  
   
   
    -->
@@ -75,9 +90,30 @@
   <!--
      The shapes and nodes fields must have the same ensemble cardinality
    -->
-  <mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh.element_nodes" />
+  <simple_mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh.element_nodes" dimensions="2" />
   
-  <mesh id="mesh_refinement.quad" element_shapes="quad_mesh.shapes" nodes="mesh.element_nodes" />
+  <simple_mesh id="mesh_refinement.quad" element_shapes="quad_mesh.shapes" nodes="mesh.element_nodes" dimensions="2" />
+  
+  <!--
+    Construct a 2x2 quad mesh with explicit connectivity. 
+   -->
+  <complex_mesh id="mesh2" dimensions="2">
+    <element index="1" shape="library::unit_square" />
+    <element index="2" shape="library::unit_square" />
+    <element index="3" shape="library::unit_square" />
+    <element index="4" shape="library::unit_square" />
+    
+    <connect element1="1" xi1="0,0" element2="3" xi2="0,1" />
+    <connect element1="1" xi1="1,0" element2="2" xi2="0,0" />
+    <connect element1="1" xi1="1,0" element2="3" xi2="1,1" />
+    <connect element1="1" xi1="1,0" element2="4" xi2="1,0" />
+    <connect element1="1" xi1="1,1" element2="2" xi2="0,1" />
+    <connect element1="2" xi1="1,0" element2="4" xi2="1,1" />
+    <connect element1="2" xi1="0,0" element2="3" xi2="1,1" />
+    <connect element1="2" xi1="0,0" element2="4" xi2="0,1" />
+    <connect element1="3" xi1="1,0" element2="4" xi2="0,0" />
+    <connect element1="3" xi1="1,1" element2="4" xi2="0,1" />
+  </complex_mesh>
 
   <piecewise_field id="mesh.coordinates" mesh="mesh1" value_domain="library::cartesian_2d">
     <evaluate_piecewise component="x" dofs="global.mesh.x">
