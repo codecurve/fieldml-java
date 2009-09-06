@@ -103,6 +103,9 @@
     <element index="3" shape="library::unit_square" />
     <element index="4" shape="library::unit_square" />
     
+    <!--
+      Some of these are redundant. e.g. A<->B, B<->C implies A<->C 
+     -->
     <connect element1="1" xi1="0,0" element2="3" xi2="0,1" />
     <connect element1="1" xi1="1,0" element2="2" xi2="0,0" />
     <connect element1="1" xi1="1,0" element2="3" xi2="1,1" />
