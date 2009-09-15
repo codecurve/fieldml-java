@@ -10,19 +10,29 @@
   10--8---3---4---5
   
   
-  Quad-refinement mesh:
+  Quad mesh:
   
- 0,1 1---5---2
-     |   |   |
-     | 1 | 2 |
-     |   |   |
-     6---7---8
-     |   |   |
-     | 3 | 4 |
-   ^ |   |   |
-   | 4---9---3
-       
-  0,0 ->    1,0
+  1---5---2
+  |   |   |
+  | 1 | 2 |
+  |   |   |
+  6---7---8
+  |   |   |
+  | 3 | 4 |
+  |   |   |
+  4---9---3
+  
+  
+  Merged mesh:
+  
+  +--+--+--+--+
+  |5 |4 |1 |\3|
+  |  |  |  |2\|
+  +--+--+--+--+
+  |6 |7 |
+  +--+--+
+  |8 |9 |
+  +--+--+
   
    -->
 
@@ -37,102 +47,47 @@
      specifying the relevant value domain. 
    -->
   <mapped_field elements="5" id="test_mesh.shapes" value_domain="library::2d_shapes">
-    <elements>
-      1  4  5
-      <constant_value>
-        library::unit_square
-      </constant_value>
-    </elements>
-    <elements>
-      2  3
-      <constant_value>
-        library::unit_triangle
-      </constant_value>
-    </elements>
+    <evaluate_map> <!-- Because the domain is single-component, we don't need to specify the component here -->
+      <elements>
+        1  4  5
+        <constant_value>
+          library::unit_square
+        </constant_value>
+      </elements>
+      <elements>
+        2  3
+        <constant_value>
+          library::unit_triangle
+        </constant_value>
+      </elements>
+    </evaluate_map>
   </mapped_field>
   
   <mapped_field elements="4" id="quad_mesh.shapes" value_domain="library::2d_shapes">
-    <elements>
-      1  2  3  4
-      <constant_value>
-        library::unit_square
-      </constant_value>
-    </elements>
+    <evaluate_map>
+      <elements>
+        1  2  3  4
+        <constant_value>
+          library::unit_square
+        </constant_value>
+      </elements>
+    </evaluate_map>
   </mapped_field>
   
-  <!--
-    Generates an output dof-vector based on an input dof vector via a matrix.
-   -->
-  <dof_generator_linear name="quad_refinement_dofs" input_elements="4" output_elements="9">
-    <row>
-      1   0   0   0
-    </row>
-    <row>
-      0   1   0   0
-    </row>
-    <row>
-      0   0   1   0
-    </row>
-    <row>
-      0   0   0   1
-    </row>
-    <row>
-      0.5 0.5 0   0
-    </row>
-    <row>
-      0.5 0   0   0.5
-    </row>
-    <row>
-      0.5 0.5 0.5 0.5
-    </row>
-    <row>
-      0   0.5 0.5 0
-    </row>
-    <row>
-      0   0   0.5 0.5
-    </row>
-  </dof_generator_linear>
-  
-  <!--
-    A simple 2d transform has 4 components, x offset, y offset, x scale, y scale.
-    
-    NOTE: This could easily be handled by an appropriate affine transform. 
-   -->
-  <mapped_field name="quad_refinement.xi_transform" value="library::simple_2d_transform">
-    <elements> 1
-      <constant_value>
-         0.0 -0.5  2.0  2.0
-      </constant_value>
-    </elements>
-    <elements> 2
-      <constant_value>
-        -0.5 -0.5  2.0  2.0
-      </constant_value>
-    </elements>
-    <elements> 3
-      <constant_value>
-         0.0  0.0  2.0  2.0
-      </constant_value>
-    </elements>
-    <elements> 4
-      <constant_value>
-        -0.5  0.0  2.0  2.0
-      </constant_value>
-    </elements>
-  </mapped_field>
-  
-
   <!--
      The shapes and nodes fields must have the same ensemble cardinality
    -->
-  <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh.element_nodes" dimensions="2" />
+  <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh1.node_list" dimensions="2" />
   
-  <nodal_mesh id="mesh_refinement.quad" element_shapes="quad_mesh.shapes" nodes="mesh.element_nodes" dimensions="2" />
+  <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" nodes="quad_mesh.node_list" dimensions="2" />
   
   <!--
-    Construct a 2x2 quad mesh with explicit connectivity. 
+    Construct a 2x2 quad mesh with explicit connectivity.
+    
+    The reading application can induce a corresponding nodal mesh if all the
+    connectivity points fall on 'corners'. 
    -->
-  <complex_mesh id="mesh2" element_shapes="quad_mesh.shapes" dimensions="2">
+  <complex_mesh id="explicit_quad_mesh" element_shapes="quad_mesh.shapes" dimensions="2">
     <!--
       Some of these are redundant. e.g. A<->B, B<->C implies A<->C 
     -->
@@ -149,10 +104,36 @@
       <connect element1="3" xi1="1,1" element2="4" xi2="0,1" />
     </connectivity>
   </complex_mesh>
+  
+  <!--
+    Construct a mesh by connecting other meshes.
+    Element shapes are implicit.
+    Element indexes are induced by the child meshes, and cannot be explicily specified.
+    
+    Provided that both child meshes are nodal meshes (or look like nodal meshes), the
+    merged mesh itself can also be treated as nodal.
+   -->
+  <merged_mesh id="merged_mesh1">
+    <child_meshes>
+      <mesh name="mesh1" />
+      <mesh name="quad_mesh" />
+    </child_meshes>
+
+    <!-- Intra-child connectivity is inherited -->     
+    <connectivity>
+      <connect element1="5" xi1="0,0" element2="6" xi2="0,1" />
+      <connect element1="5" xi1="1,0" element2="6" xi2="1,1" />
+      <connect element1="4" xi1="1,0" element2="7" xi2="1,1" />
+    </connectivity>
+  </merged_mesh>
 
   <piecewise_field id="mesh.coordinates" mesh="mesh1" value_domain="library::cartesian_2d">
     <evaluate_piecewise component="x" dofs="global.mesh.x">
-      <elements>  1  4
+      <!--
+        Number of elements given must be an integer multiple of the number of elements
+        specified in the imported field. 
+       -->
+      <elements>  1  4  5
         <import_value field="library::bilinear_lagrange">
           <dofs component="u">
             <generate_dofs generator="library::direct_dof_generator">
@@ -174,36 +155,23 @@
         </import_value>
       </elements>
       <elements>  3
-      <constant_value>
-        0.0
-      </constant_value>
-      </elements>
-      <elements>  5
-        <import_value field="mesh.quad_field">
-          <dofs component="u">
-            <generate_dofs generator="quad_refinement_dofs">
-              <import_indexes field="mesh1.node_list" />
-            </generate_dofs>
-            <!--
-              We need to turn the xi into an element-xi pair on the refined mesh 
-             -->
-            <generate_elements xi_transform="quad_refinement.xi_transform" />
-          </dofs>
-        </import_value>
+        <constant_value>
+          0.0
+        </constant_value>
       </elements>
     </evaluate_piecewise>
   </piecewise_field>
   
-  <piecewise_field id="mesh.quad_field" mesh="mesh_refinement.quad" value_domain="library::real">
+  <piecewise_field id="mesh.quad_field" mesh="quad_mesh" value_domain="library::real">
     <evaluate_piecewise component="u">
       <elements>  1  2  3  4
-        <interpolate_value element_dof_indexes="mesh_refinement.quad_node_list" interpolation="library::bilinear_lagrange" />
+        <interpolate_value element_dof_indexes="quad_mesh.node_list" interpolation="library::bilinear_lagrange" />
       </elements>
     </evaluate_piecewise>
   </piecewise_field>
   
-  <piecewise_field elements="5" id="mesh1.node_list" value_domain="library::index_vector">
-    <evaluate_piecewise>
+  <mapped_field elements="5" id="mesh1.node_list" value_domain="library::index_vector">
+    <evaluate_map>
       <elements> 1
         <constant_value>
           1  2  4  3
@@ -229,11 +197,11 @@
           9  7  8  10
         </constant_value>
       </elements>
-    </evaluate_piecewise>
-  </piecewise_field>
+    </evaluate_map>
+  </mapped_field>
 
-  <piecewise_field elements="4" id="mesh_refinement.quad_node_list" value_domain="library::index_vector">
-    <evaluate_piecewise>
+  <mapped_field elements="4" id="quad_mesh.node_list" value_domain="library::index_vector">
+    <evaluate_map>
       <elements> 1
         <constant_value>
           1  5  7  6
@@ -254,8 +222,8 @@
           6  7  9  4
         </constant_value>
       </elements>
-    </evaluate_piecewise>
-  </piecewise_field>
+    </evaluate_map>
+  </mapped_field>
 
   <global_dof_list id="global.mesh.x">
     0.0  1.0  0.0  1.0  2.0  2.0 -1.0 -1.0
