@@ -136,21 +136,17 @@
       <elements>  1  4  5
         <import_value field="library::bilinear_lagrange">
           <dofs component="u">
-            <generate_dofs generator="library::direct_dof_generator">
               <!--
-                The element passed to the given field is the element being evaluated 
+                The element passed to the mask field is the element being evaluated 
                -->
-              <import_indexes field="mesh1.node_list" />
-            </generate_dofs>
+            <mask_dofs mask_indexes="mesh1.node_list" />
           </dofs>
         </import_value>
       </elements>
       <elements>  2
         <import_value field="library::bilinear_simplex">
           <dofs component="u">
-            <generate_dofs generator="library::direct_dof_generator">
-              <import_indexes field="mesh1.node_list" />
-            </generate_dofs>
+            <mask_dofs mask_indexes="mesh1.node_list" />
           </dofs>
         </import_value>
       </elements>
@@ -162,13 +158,29 @@
     </evaluate_piecewise>
   </piecewise_field>
   
-  <piecewise_field id="mesh.quad_field" mesh="quad_mesh" value_domain="library::real">
-    <evaluate_piecewise component="u">
+  <piecewise_field id="mesh.quad_field" mesh="explicit_quad_mesh" value_domain="library::real">
+    <evaluate_piecewise component="u" dofs="9">
       <elements>  1  2  3  4
-        <interpolate_value element_dof_indexes="quad_mesh.node_list" interpolation="library::bilinear_lagrange" />
+        <import_value field="library::bilinear_lagrange">
+          <dofs component="u">
+            <mask_dofs mask_indexes="quad_mesh.node_list" />
+          </dofs>
+        </import_value>
       </elements>
     </evaluate_piecewise>
   </piecewise_field>
+  
+  <!--
+    Chart fields are restricted to having a single element.  
+   -->
+  <chart_field id="library::bilinear_lagrange" mesh="library::square_mesh" value_domain="library::real">
+    <evaluate component="u" dofs="4">
+      ( 1 - x1 ) * ( 1 - x2 ) * dof1 +
+      x1 * ( 1 - x2 ) * dof2 +
+      ( 1 - x1 ) * x2 * dof3 +
+      x1 * x2 * dof4
+    </evaluate>
+  </chart_field>
   
   <mapped_field elements="5" id="mesh1.node_list" value_domain="library::index_vector">
     <evaluate_map>
