@@ -63,6 +63,23 @@
     </evaluate_map>
   </mapped_field>
   
+  <mapped_field elements="5" id="test_mesh.points" value_domain="library::2d_points">
+    <evaluate_map>
+      <elements>
+        1  4  5
+        <constant_value>
+          library::points_square_4_clockwise
+        </constant_value>
+      </elements>
+      <elements>
+        2  3
+        <constant_value>
+          library::points_triangle_3_clockwise
+        </constant_value>
+      </elements>
+    </evaluate_map>
+  </mapped_field>
+
   <mapped_field elements="4" id="quad_mesh.shapes" value_domain="library::2d_shapes">
     <evaluate_map>
       <elements>
@@ -73,13 +90,32 @@
       </elements>
     </evaluate_map>
   </mapped_field>
+
+  <mapped_field elements="4" id="quad_mesh.points" value_domain="library::2d_shapes">
+    <evaluate_map>
+      <elements>
+        1  2  3  4
+        <constant_value>
+          library::points_square_4_clockwise
+        </constant_value>
+      </elements>
+    </evaluate_map>
+  </mapped_field>
   
   <!--
-     The shapes and nodes fields must have the same ensemble cardinality
+     The shapes and nodes fields must have the same ensemble cardinality.
    -->
-  <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" nodes="mesh1.node_list" dimensions="2" />
+  <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" points="test_mesh.points" nodes="mesh1.node_list" dimensions="2" >
+    <boundary_nodes>
+      1  2  3  4  5  6  7  8  9  10
+    </boundary_nodes>
+  </nodal_mesh>
   
-  <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" nodes="quad_mesh.node_list" dimensions="2" />
+  <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" nodes="quad_mesh.node_list" dimensions="2" >
+    <boundary_nodes>
+      1  2  3  4  5  6  8  9
+    </boundary_nodes>
+  </nodal_mesh>
   
   <!--
     Construct a 2x2 quad mesh with explicit connectivity.
@@ -87,21 +123,17 @@
     The reading application can induce a corresponding nodal mesh if all the
     connectivity points fall on 'corners'. 
    -->
-  <complex_mesh id="explicit_quad_mesh" element_shapes="quad_mesh.shapes" dimensions="2">
-    <!--
-      Some of these are redundant. e.g. A<->B, B<->C implies A<->C 
-    -->
+  <complex_mesh id="explicit_quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" dimensions="2">
     <connectivity>
-      <connect element1="1" xi1="0,0" element2="3" xi2="0,1" />
-      <connect element1="1" xi1="1,0" element2="2" xi2="0,0" />
-      <connect element1="1" xi1="1,0" element2="3" xi2="1,1" />
-      <connect element1="1" xi1="1,0" element2="4" xi2="1,0" />
-      <connect element1="1" xi1="1,1" element2="2" xi2="0,1" />
-      <connect element1="2" xi1="1,0" element2="4" xi2="1,1" />
-      <connect element1="2" xi1="0,0" element2="3" xi2="1,1" />
-      <connect element1="2" xi1="0,0" element2="4" xi2="0,1" />
-      <connect element1="3" xi1="1,0" element2="4" xi2="0,0" />
-      <connect element1="3" xi1="1,1" element2="4" xi2="0,1" />
+      <point name="1" element1="3" point1="1" />
+      <point name="2" element1="3" point1="2" element2="4" point2="1" />
+      <point name="3" element1="4" point1="2" />
+      <point name="4" element1="1" point1="1" element2="3" point2="4" />
+      <point element1="1" point1="2" element2="2" point2="1" element3="3" point3="3" element4="4" point="4"/>
+      <point name="5" element1="2" point1="2" element2="4" point2="3" />
+      <point name="6" element1="1" point1="4" />
+      <point name="7" element1="1" point1="3" element2="2" point2="4" />
+      <point name="8" element1="2" point1="3" />
     </connectivity>
   </complex_mesh>
   
@@ -115,15 +147,26 @@
    -->
   <merged_mesh id="merged_mesh1">
     <child_meshes>
-      <mesh name="mesh1" />
-      <mesh name="quad_mesh" />
+      <mesh name="submesh_1" source_mesh="mesh1" />
+      <mesh name="submesh_2" source_mesh="quad_mesh" />
     </child_meshes>
 
-    <!-- Intra-child connectivity is inherited -->     
     <connectivity>
-      <connect element1="5" xi1="0,0" element2="6" xi2="0,1" />
-      <connect element1="5" xi1="1,0" element2="6" xi2="1,1" />
-      <connect element1="4" xi1="1,0" element2="7" xi2="1,1" />
+      <point name="1" element1="submesh_1" point1="9" />
+      <point name="2" element1="submesh_1" point1="7" />
+      <point name="3" element1="submesh_1" point1="1" />
+      <point name="4" element1="submesh_1" point1="2" />
+      <point name="5" element1="submesh_1" point1="6" />
+      <point name="6" element1="submesh_1" point1="5" />
+      <point name="7" element1="submesh_1" point1="4" />
+      <point name="8" element1="submesh_1" point1="3" element2="submesh_2" point2="2" />
+      <point element1="submesh_1" point1="8" element2="submesh_2" point2="5" />
+      <point name="9" element1="submesh_2" point1="8" />
+      <point name="10" element1="submesh_2" point1="3" />
+      <point name="11" element1="submesh_2" point1="9" />
+      <point name="12" element1="submesh_2" point1="4" />
+      <point name="13" element1="submesh_2" point1="6" />
+      <point name="14" element1="submesh_1" point1="10" element2="submesh_2" point2="1" />
     </connectivity>
   </merged_mesh>
 
