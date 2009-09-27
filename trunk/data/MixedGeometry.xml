@@ -122,6 +122,8 @@
     
     The reading application can induce a corresponding nodal mesh if all the
     connectivity points fall on 'corners'. 
+    
+    Un-named points are not visible to the outside world.
    -->
   <complex_mesh id="explicit_quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" dimensions="2">
     <connectivity>
@@ -178,19 +180,19 @@
        -->
       <elements>  1  4  5
         <import_value field="library::bilinear_lagrange">
-          <dofs component="u">
+          <parameters component="u">
               <!--
                 The element passed to the mask field is the element being evaluated 
                -->
             <mask_dofs mask_indexes="mesh1.node_list" />
-          </dofs>
+          </parameters>
         </import_value>
       </elements>
       <elements>  2
         <import_value field="library::bilinear_simplex">
-          <dofs component="u">
+          <parameters component="u">
             <mask_dofs mask_indexes="mesh1.node_list" />
-          </dofs>
+          </parameters>
         </import_value>
       </elements>
       <elements>  3
@@ -202,12 +204,12 @@
   </piecewise_field>
   
   <piecewise_field id="mesh.quad_field" mesh="explicit_quad_mesh" value_domain="library::real">
-    <evaluate_piecewise component="u" dofs="9">
+    <evaluate_piecewise component="u" parameters="9">
       <elements>  1  2  3  4
         <import_value field="library::bilinear_lagrange">
-          <dofs component="u">
+          <parameters component="u">
             <mask_dofs mask_indexes="quad_mesh.node_list" />
-          </dofs>
+          </parameters>
         </import_value>
       </elements>
     </evaluate_piecewise>
@@ -217,11 +219,11 @@
     Chart fields are restricted to having a single element.  
    -->
   <chart_field id="library::bilinear_lagrange" mesh="library::square_mesh" value_domain="library::real">
-    <evaluate component="u" dofs="4">
-      ( 1 - x1 ) * ( 1 - x2 ) * dof1 +
-      x1 * ( 1 - x2 ) * dof2 +
-      ( 1 - x1 ) * x2 * dof3 +
-      x1 * x2 * dof4
+    <evaluate component="u" parameters="4">
+      ( 1 - x1 ) * ( 1 - x2 ) * parameter1 +
+      x1 * ( 1 - x2 ) * parameter2 +
+      ( 1 - x1 ) * x2 * parameter3 +
+      x1 * x2 * parameter4
     </evaluate>
   </chart_field>
   
