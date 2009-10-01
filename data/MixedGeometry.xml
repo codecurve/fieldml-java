@@ -106,9 +106,9 @@
      The shapes and nodes fields must have the same ensemble cardinality.
    -->
   <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" points="test_mesh.points" nodes="mesh1.node_list" dimensions="2" >
-    <boundary_nodes>
+    <visible_nodes>
       1  2  3  4  5  6  7  8  9  10
-    </boundary_nodes>
+    </visible_nodes>
   </nodal_mesh>
   
   <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" nodes="quad_mesh.node_list" dimensions="2" >
@@ -184,14 +184,14 @@
               <!--
                 The element passed to the mask field is the element being evaluated 
                -->
-            <mask_dofs mask_indexes="mesh1.node_list" />
+            <parameter_mask mask_indexes="mesh1.node_list" />
           </parameters>
         </import_value>
       </elements>
       <elements>  2
         <import_value field="library::bilinear_simplex">
           <parameters component="u">
-            <mask_dofs mask_indexes="mesh1.node_list" />
+            <parameter_mask mask_indexes="mesh1.node_list" />
           </parameters>
         </import_value>
       </elements>
@@ -208,7 +208,7 @@
       <elements>  1  2  3  4
         <import_value field="library::bilinear_lagrange">
           <parameters component="u">
-            <mask_dofs mask_indexes="quad_mesh.node_list" />
+            <parameter_mask mask_indexes="quad_mesh.node_list" />
           </parameters>
         </import_value>
       </elements>
