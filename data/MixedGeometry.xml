@@ -112,9 +112,9 @@
   </nodal_mesh>
   
   <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" nodes="quad_mesh.node_list" dimensions="2" >
-    <boundary_nodes>
+    <visible_nodes>
       1  2  3  4  5  6  8  9
-    </boundary_nodes>
+    </visible_nodes>
   </nodal_mesh>
   
   <!--
