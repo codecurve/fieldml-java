@@ -37,16 +37,9 @@
    -->
 
   <!--
-     Mapped fields can be defined over an implicit index-valued ensemble, starting from 1, with the
-     given cardinality. This allows them to be used hierarchically, with the parent supplying it
-     with an ensemble constructed from the parent's own context. 
+     For now, all values in a shape map must have the same dimensionality.
    -->
-  
-  <!--
-     For now, all values in a shape map must have the same dimensionality. This is enforced by
-     specifying the relevant value domain. 
-   -->
-  <mapped_field elements="5" id="test_mesh.shapes" value_domain="library::2d_shapes">
+  <element_shapes elements="5" id="test_mesh.shapes" dimensions="2">
     <evaluate_map> <!-- Because the domain is single-component, we don't need to specify the component here -->
       <elements>
         1  4  5
@@ -61,9 +54,9 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_shapes>
   
-  <mapped_field elements="5" id="test_mesh.points" value_domain="library::2d_points">
+  <element_points elements="5" id="test_mesh.points" value_domain="library::2d_points">
     <evaluate_map>
       <elements>
         1  4  5
@@ -78,9 +71,9 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_points>
 
-  <mapped_field elements="4" id="quad_mesh.shapes" value_domain="library::2d_shapes">
+  <element_shapes elements="4" id="quad_mesh.shapes" dimensions="2">
     <evaluate_map>
       <elements>
         1  2  3  4
@@ -89,9 +82,9 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_shapes>
 
-  <mapped_field elements="4" id="quad_mesh.points" value_domain="library::2d_shapes">
+  <element_points elements="4" id="quad_mesh.points" dimensions="2">
     <evaluate_map>
       <elements>
         1  2  3  4
@@ -100,18 +93,18 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_points>
   
   <!--
-     The shapes and nodes fields must have the same ensemble cardinality.
+     The shapes and nodes lists must have the same ensemble cardinality.
    -->
-  <nodal_mesh id="mesh1" element_shapes="test_mesh.shapes" points="test_mesh.points" nodes="mesh1.node_list" dimensions="2" >
+  <nodal_mesh id="mesh1" shapes="test_mesh.shapes" points="test_mesh.points" nodes="mesh1.node_list" >
     <visible_nodes>
       1  2  3  4  5  6  7  8  9  10
     </visible_nodes>
   </nodal_mesh>
   
-  <nodal_mesh id="quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" nodes="quad_mesh.node_list" dimensions="2" >
+  <nodal_mesh id="quad_mesh" shapes="quad_mesh.shapes" points="quad_mesh.points" nodes="quad_mesh.node_list" >
     <visible_nodes>
       1  2  3  4  5  6  8  9
     </visible_nodes>
@@ -125,7 +118,7 @@
     
     Un-named points are not visible to the outside world.
    -->
-  <complex_mesh id="explicit_quad_mesh" element_shapes="quad_mesh.shapes" points="quad_mesh.points" dimensions="2">
+  <complex_mesh id="explicit_quad_mesh" shapes="quad_mesh.shapes" points="quad_mesh.points" >
     <connectivity>
       <point name="1" element1="3" point1="1" />
       <point name="2" element1="3" point1="2" element2="4" point2="1" />
@@ -216,7 +209,7 @@
   </piecewise_field>
   
   <!--
-    Chart fields are restricted to having a single element.  
+    Charts are restricted to having a single element.  
    -->
   <chart_field id="library::bilinear_lagrange" mesh="library::square_mesh" value_domain="library::real">
     <evaluate component="u" parameters="4">
@@ -227,7 +220,7 @@
     </evaluate>
   </chart_field>
   
-  <mapped_field elements="5" id="mesh1.node_list" value_domain="library::index_vector">
+  <element_nodes elements="5" id="mesh1.node_list" value_domain="library::index_vector">
     <evaluate_map>
       <elements> 1
         <constant_value>
@@ -255,9 +248,9 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_nodes>
 
-  <mapped_field elements="4" id="quad_mesh.node_list" value_domain="library::index_vector">
+  <element_nodes elements="4" id="quad_mesh.node_list" value_domain="library::index_vector">
     <evaluate_map>
       <elements> 1
         <constant_value>
@@ -280,7 +273,7 @@
         </constant_value>
       </elements>
     </evaluate_map>
-  </mapped_field>
+  </element_nodes>
 
   <global_dof_list id="global.mesh.x">
     0.0  1.0  0.0  1.0  2.0  2.0 -1.0 -1.0
