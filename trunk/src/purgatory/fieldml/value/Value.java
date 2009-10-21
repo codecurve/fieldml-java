@@ -1,9 +1,9 @@
-package fieldml.value;
+package purgatory.fieldml.value;
 
-import fieldml.domain.ContinuousDomain;
-import fieldml.domain.DiscreteFieldDomain;
-import fieldml.domain.DiscreteIndexDomain;
-import fieldml.domain.Domain;
+import purgatory.fieldml.domain.ContinuousDomain;
+import purgatory.fieldml.domain.DiscreteFieldDomain;
+import purgatory.fieldml.domain.DiscreteIndexDomain;
+import purgatory.fieldml.domain.Domain;
 
 public class Value
 {
